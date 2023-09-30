@@ -2,6 +2,8 @@ import socket
 import signal
 import logging
 from ProtocolHandler import ProtocolHandler
+from common.clientHandlerMiddleware import ClientHandlerMiddleware
+from airportSerializer import AirportSerializer
 
 class ClientHandler:
     def __init__(self, port):
@@ -11,6 +13,9 @@ class ClientHandler:
         self._server_socket.listen(1)
         self._server_on = True
         signal.signal(signal.SIGTERM, self.__handle_signal)
+
+        self.airport_serializer = AirportSerializer()
+        self.middleware = ClientHandlerMiddleware()
 
     def run(self):
         """
@@ -46,8 +51,10 @@ class ClientHandler:
                 keep_reading = False
                 logging.info(f'action: finishing | result: in_progress')
             else:
-                airport = value
                 logging.info(f'action: read | result: success | received: {value}')
+                data = self.airport_serializer.to_bytes(value)
+                self.middleware.send_airport(data)
+
 
             protocolHandler.ack()
 

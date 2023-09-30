@@ -1,6 +1,6 @@
 FROM python-base:latest
 
-COPY clientHandler /
+COPY airportHandler /
 COPY utils /
 COPY model /
 

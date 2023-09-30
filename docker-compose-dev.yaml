@@ -1,36 +1,90 @@
-version: '3.9'
 name: tp1
+networks:
+  middleware_testing_net:
+    external: 'true'
+    ipam:
+      config:
+      - subnet: 172.25.125.0/24
+      driver: default
 services:
-  ClientHandler:
-    container_name: clientHandler
-    image: client_handler:latest
+  airportHandler1:
+    container_name: airportHandler1
     entrypoint: python3 /main.py
     environment:
-      - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=DEBUG
-    volumes:
-      - ./clientHandler/config.ini:/config.ini
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: airport_handler:latest
     networks:
-      - testing_net
-
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./airportHandler/config.ini:/config.ini
+  airportHandler2:
+    container_name: airportHandler2
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: airport_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./airportHandler/config.ini:/config.ini
+  airportHandler3:
+    container_name: airportHandler3
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: airport_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./airportHandler/config.ini:/config.ini
+  airportHandler4:
+    container_name: airportHandler4
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: airport_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./airportHandler/config.ini:/config.ini
   client:
     container_name: client
-    image: client:latest
+    depends_on:
+    - clientHandler
     entrypoint: python3 /main.py
     environment:
-      - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=DEBUG
-    volumes:
-      - ./client/config.ini:/config.ini
-      - ./client/airports-codepublic.csv:/airports-codepublic.csv
-    depends_on:
-      - ClientHandler
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: client:latest
     networks:
-      - testing_net
-
-networks:
-  testing_net:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.25.125.0/24
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./client/config.ini:/config.ini
+    - ./client/airports-codepublic.csv:/airports-codepublic.csv
+  clientHandler:
+    container_name: clientHandler
+    depends_on:
+    - airportHandler1
+    - airportHandler2
+    - airportHandler3
+    - airportHandler4
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: client_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./clientHandler/config.ini:/config.ini
+version: '3.9'

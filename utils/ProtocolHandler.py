@@ -1,33 +1,14 @@
 import logging
-from TCPHandler import TCPHandler 
-from Airport import Airport
+from TCPHandler import TCPHandler
+from airport import Airport
+from protocol import TlvTypes, UnexpectedType, SIZE_LENGTH 
+from airportSerializer import AirportSerializer
 import struct
-
-class UnexpectedType(Exception):
-    pass
-
-SIZE_LENGTH = 4
-SIZE_CODE_DATA = 4
-
-class TlvTypes():
-    # sizes
-    SIZE_CODE_MSG = 4
-
-    # types
-
-    EOF = 0
-
-    AIRPORT = 1
-    AIRPORT_COD = 2
-    AIRPORT_LATITUDE = 3;   AIRPORT_LAT_LEN = 4
-    AIRPORT_LONGITUDE = 4;  AIRPORT_LON_LEN = 4
-
-    FLIGHT = 5
-    ACK = 6
 
 class ProtocolHandler:
     def __init__(self, socket):
         self.TCPHandler = TCPHandler(socket)
+        self.airport_serializer = AirportSerializer()
 
     def wait_confimation(self):
         type_encode_raw = self.TCPHandler.read_all(TlvTypes.SIZE_CODE_MSG)
@@ -46,34 +27,10 @@ class ProtocolHandler:
         assert result == len(bytes), f'TCP Error: cannot send EOF'
 
     def send_airport(self, airport):
-        bytes = self.serialize_airport(airport)
+        bytes = self.airport_serializer.to_bytes(airport)
         result =  self.TCPHandler.send_all(bytes)
         assert result == len(bytes)
         self.wait_confimation()
-
-    def serialize_airport(self, airport):
-        bytes = b''
-
-        bytes += int.to_bytes(TlvTypes.AIRPORT_COD, TlvTypes.SIZE_CODE_MSG, 'big')
-        bytes_cod = airport.cod.encode('utf-8')
-        bytes += int.to_bytes(len(bytes_cod), SIZE_LENGTH, 'big')
-        bytes += bytes_cod
-
-        bytes += int.to_bytes(TlvTypes.AIRPORT_LATITUDE, TlvTypes.SIZE_CODE_MSG, 'big')
-        bytes_lat = struct.pack('!f', airport.latitude)
-        bytes += int.to_bytes(len(bytes_lat), SIZE_LENGTH, 'big')
-        bytes += bytes_lat
-
-        bytes += int.to_bytes(TlvTypes.AIRPORT_LONGITUDE, TlvTypes.SIZE_CODE_MSG, 'big')
-        bytes_lon = struct.pack('!f', airport.longitude)
-        bytes += int.to_bytes(len(bytes_lon), SIZE_LENGTH, 'big')
-        bytes += bytes_lon
-
-        data = b''
-        data += int.to_bytes(TlvTypes.AIRPORT, TlvTypes.SIZE_CODE_MSG, 'big')
-        data += int.to_bytes(len(bytes), SIZE_LENGTH, 'big')
-        data += bytes
-        return data
 
     def read_tl(self):
         """
@@ -93,43 +50,17 @@ class ProtocolHandler:
 
         return _type, _len
 
-    def read_airport(self, tlv_len):
-        assert tlv_len > 0, f'Invalid length: should be positive'
-
-        bytes_readed = 0
-        raw_airport = {
-            TlvTypes.AIRPORT_COD: b'',
-            TlvTypes.AIRPORT_LATITUDE: b'',
-            TlvTypes.AIRPORT_LONGITUDE: b'',
-        }
-        while bytes_readed < tlv_len:
-            field_type, length = self.read_tl()
-            bytes_readed += TlvTypes.SIZE_CODE_MSG+SIZE_LENGTH
-            assert bytes_readed < tlv_len, f'Invalid airport length: field {field_type} corrupted'
-
-            raw_field = self.TCPHandler.read_all(length)
-            bytes_readed += length
-            assert bytes_readed <= tlv_len, f'Invalid airport length: more information received'
-
-            raw_airport[field_type] = raw_field
-
-        # Verification: all airports field should be received
-        assert raw_airport[TlvTypes.AIRPORT_COD], "Invalid airport: no code provided"
-        assert raw_airport[TlvTypes.AIRPORT_LATITUDE], "Invalid bet: no latitude provided"
-        assert raw_airport[TlvTypes.AIRPORT_LONGITUDE], "Invalid bet: no longitude provided"
-
-        return Airport(
-            cod=raw_airport[TlvTypes.AIRPORT_COD].decode('utf-8'),
-            latitude=struct.unpack('!f', raw_airport[TlvTypes.AIRPORT_LATITUDE]),
-            longitude=struct.unpack('!f', raw_airport[TlvTypes.AIRPORT_LONGITUDE])
-        )
-
     def read(self):
         tlv_type, tlv_len = self.read_tl()
         if tlv_type == TlvTypes.EOF:
             return TlvTypes.EOF, None
         elif tlv_type == TlvTypes.AIRPORT:
-            return TlvTypes.AIRPORT, self.read_airport(tlv_len)
+            data = self.TCPHandler.read_all(tlv_len)
+            data = int.to_bytes(tlv_len, SIZE_LENGTH, 'big') + data
+            data = int.to_bytes(tlv_type, TlvTypes.SIZE_CODE_MSG, 'big') + data
+
+            return TlvTypes.AIRPORT, self.airport_serializer.from_bytes(data)
+
         # elif tlv_type == TlvTypes.CHUNK: (FUTURE)
             # ...
         else:
