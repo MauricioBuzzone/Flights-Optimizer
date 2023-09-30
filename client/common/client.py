@@ -1,7 +1,7 @@
 import socket
 import logging
 import csv
-import ProtocolHandler
+from ProtocolHandler import ProtocolHandler
 
 class Client:
     def __init__(self, port, ip, airport_path):
