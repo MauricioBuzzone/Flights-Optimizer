@@ -1,6 +1,20 @@
 version: '3.9'
 name: tp1
 services:
+  ClientHandler:
+    container_name: clientHandler
+    image: client_handler:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=DEBUG
+    volumes:
+      - ./clientHandler/config.ini:/config.ini
+      - ./utils/ProtocolHandler.py:/ProtocolHandler.py
+      - ./utils/TCPHandler.py:/TCPHandler.py
+    networks:
+      - testing_net
+
   client:
     container_name: client
     image: client:latest
@@ -10,7 +24,11 @@ services:
       - LOGGING_LEVEL=DEBUG
     volumes:
       - ./client/config.ini:/config.ini
+      - ./utils/ProtocolHandler.py:/ProtocolHandler.py
+      - ./utils/TCPHandler.py:/TCPHandler.py
       - ./client/airports-codepublic.csv:/airports-codepublic.csv
+    depends_on:
+      - ClientHandler
     networks:
       - testing_net
 

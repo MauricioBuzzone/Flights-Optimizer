@@ -1,5 +1,3 @@
-import socket
-
 class SocketBroken(Exception):
     pass
 
@@ -9,29 +7,28 @@ preventing "short reads" and "short sends."
 """
 class TCPHandler:
 
-    def __init__(self, port, ip):
-        self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._server_socket.connect((ip, port))
+    def __init__(self, socket):
+        self.socket = socket
 
-    def read_all(client_sock, bytes_to_read):
+    def read_all(self, bytes_to_read):
         """
         Receives and returns byte data from the client preventing short reads.
         """
         data = b''
         while len(data) < bytes_to_read:
-            bytes = client_sock.recv(bytes_to_read - len(data))
+            bytes = self.socket.recv(bytes_to_read - len(data))
             if bytes == b'':
                 raise SocketBroken()
             data += bytes
         return data
 
-    def send_all(client_sock, msg):
+    def send_all(self, msg):
         """
         Recv all n bytes to avoid short read
         """
         bytesSended = 0
         while bytesSended < len(msg):
-            b = client_sock.send(msg[bytesSended:])
+            b = self.socket.send(msg[bytesSended:])
             if b == 0:
                 raise SocketBroken()
             bytesSended += b

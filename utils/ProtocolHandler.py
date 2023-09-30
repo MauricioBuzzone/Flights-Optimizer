@@ -7,14 +7,15 @@ SIZE_CODE_DATA = 4
 
 AIRPORT = 0
 FLIGHT = 1
+EOF = 2
 
 FIELD = 0
 VALUE = 1
 
 class ProtocolHandler:
 
-    def __init__(self, port, ip):
-        self.TCPHandler = TCPHandler(port,ip)
+    def __init__(self, socket):
+        self.TCPHandler = TCPHandler(socket)
 
 
     def send(self,data):

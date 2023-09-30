@@ -1,6 +1,7 @@
 docker-image:
 	docker build -f ./base-images/python-base.dockerfile -t "python-base:latest" .
 	docker build -f ./client/Dockerfile -t "client:latest" .
+	docker build -f ./clientHandler/Dockerfile -t "client_handler:latest" .
 .PHONY: docker-image
 
 docker-compose-up: docker-image
