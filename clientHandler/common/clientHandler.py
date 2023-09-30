@@ -1,7 +1,7 @@
 import socket 
 import signal
 import logging
-from ProtocolHandler import ProtocolHandler, EOF
+from ProtocolHandler import ProtocolHandler
 
 class ClientHandler:
     def __init__(self, port):
@@ -34,13 +34,24 @@ class ClientHandler:
         If a problem arises in the communication with the client, the
         client socket will also be closed
         """
-
         protocolHandler = ProtocolHandler(client_sock)
-        type, msg = protocolHandler.read()
-        while type != EOF:
-            logging.info(f"{msg}")
-            type, msg = protocolHandler.read()
 
+        keep_reading = True
+        while keep_reading:
+            logging.info('action: read | result: in_progress')
+            t, value = protocolHandler.read()
+
+            if protocolHandler.is_eof(t):
+                logging.info(f'action: read | result: success | received: EOF')
+                keep_reading = False
+                logging.info(f'action: finishing | result: in_progress')
+            else:
+                airport = value
+                logging.info(f'action: read | result: success | received: {value}')
+
+            protocolHandler.ack()
+
+        logging.info(f'action: finishing | result: success')
 
     def __accept_new_connection(self):
         """

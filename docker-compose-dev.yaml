@@ -10,8 +10,6 @@ services:
       - LOGGING_LEVEL=DEBUG
     volumes:
       - ./clientHandler/config.ini:/config.ini
-      - ./utils/ProtocolHandler.py:/ProtocolHandler.py
-      - ./utils/TCPHandler.py:/TCPHandler.py
     networks:
       - testing_net
 
@@ -24,8 +22,6 @@ services:
       - LOGGING_LEVEL=DEBUG
     volumes:
       - ./client/config.ini:/config.ini
-      - ./utils/ProtocolHandler.py:/ProtocolHandler.py
-      - ./utils/TCPHandler.py:/TCPHandler.py
       - ./client/airports-codepublic.csv:/airports-codepublic.csv
     depends_on:
       - ClientHandler
