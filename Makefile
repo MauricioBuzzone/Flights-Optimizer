@@ -17,7 +17,7 @@ docker-compose-up: docker-image
 
 docker-compose-down:
 	docker compose -f docker-compose-middleware.yaml stop -t 1
-	docker compose -f docker-compose-middleware.yaml down
+	docker compose -f docker-compose-middleware.yaml down 
 	docker compose -f docker-compose-dev.yaml stop -t 1
 	docker compose -f docker-compose-dev.yaml down
 .PHONY: docker-compose-down

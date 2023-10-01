@@ -26,8 +26,8 @@ class ProtocolHandler:
         result = self.TCPHandler.send_all(bytes)
         assert result == len(bytes), f'TCP Error: cannot send EOF'
 
-    def send_airport(self, airport):
-        bytes = self.airport_serializer.to_bytes(airport)
+    def send_airport(self, airports):
+        bytes = self.airport_serializer.to_bytes(airports)
         result =  self.TCPHandler.send_all(bytes)
         assert result == len(bytes)
         self.wait_confimation()

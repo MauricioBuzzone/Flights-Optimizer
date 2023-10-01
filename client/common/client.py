@@ -5,12 +5,13 @@ from ProtocolHandler import ProtocolHandler
 from airport import Airport
 
 class Client:
-    def __init__(self, port, ip, airport_path):
+    def __init__(self, config_params):
         # Initialize server socket
+        self.config = config_params
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((ip, port))
+        self.socket.connect((config_params["ip"], config_params["port"]))
         self.protocolHandler = ProtocolHandler(self.socket)
-        self.airport_path = airport_path
+        self.airport_path = config_params["airport_path"]
 
     def run(self):
         # Read airports.csv and send to the system.
@@ -22,9 +23,15 @@ class Client:
         with open(self.airport_path, mode ='r') as file:
             csvFile = csv.reader(file,delimiter=';')
             next(csvFile, None)  # skip the headers
+            airports = []
             for line in csvFile:
                 airport = Airport(cod=line[0], latitude=float(line[5]), longitude=float(line[6]))
+                airports.append(airport)
+                if len(airports) == self.config["chunk_size"]:
+                    self.protocolHandler.send_airport(airports)
+                    airports = []
 
-                logging.info(f'action: send | airport: {airport} | result: in_progress')
-                self.protocolHandler.send_airport(airport)
-                logging.info(f'action: send | airport: {airport} | result: success')
+            if airports:
+                self.protocolHandler.send_airport(airports)
+
+                
