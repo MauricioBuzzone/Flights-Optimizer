@@ -1,0 +1,2 @@
+# Configuration
+AMOUNT_OF_AIRPORT_HANDLER = 4
