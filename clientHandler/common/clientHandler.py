@@ -4,6 +4,7 @@ import logging
 from ProtocolHandler import ProtocolHandler
 from common.clientHandlerMiddleware import ClientHandlerMiddleware
 from airportSerializer import AirportSerializer
+from protocol import make_eof
 
 class ClientHandler:
     def __init__(self, port):
@@ -25,11 +26,8 @@ class ClientHandler:
         communication with a client. After client with communucation
         finishes, servers starts to accept new connections again
         """
-
-
         while self._server_on:
-            client_sock = self.__accept_new_connection()
-            
+            client_sock = self.__accept_new_connection() 
             self.__handle_client_connection(client_sock)
 
     def __handle_client_connection(self, client_sock):
@@ -50,12 +48,13 @@ class ClientHandler:
                 logging.info(f'action: read | result: success | received: EOF')
                 keep_reading = False
                 logging.info(f'action: finishing | result: in_progress')
+                eof = make_eof()
+                self.middleware.send_airport(eof)
             else:
                 logging.info(f'action: read | result: success | received: {value}')
                 data = self.airport_serializer.to_bytes(value)
                 self.middleware.send_airport(data)
-
-
+                
             protocolHandler.ack()
 
         logging.info(f'action: finishing | result: success')

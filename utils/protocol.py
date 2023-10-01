@@ -1,3 +1,5 @@
+import struct
+
 SIZE_LENGTH = 4
 
 class TlvTypes():
@@ -14,6 +16,15 @@ class TlvTypes():
 
     FLIGHT = 5
     ACK = 6
+
+def is_eof(bytes):
+    if len(bytes) == TlvTypes.SIZE_CODE_MSG:
+        data = struct.unpack("!i",bytes)[0]
+        return data == TlvTypes.EOF
+    return False
+
+def make_eof():
+    return int.to_bytes(TlvTypes.EOF, TlvTypes.SIZE_CODE_MSG, "big")
 
 class UnexpectedType(Exception):
     pass

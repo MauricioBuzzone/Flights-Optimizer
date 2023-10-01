@@ -33,5 +33,8 @@ class Client:
 
             if airports:
                 self.protocolHandler.send_airport(airports)
-
+            
+            self.protocolHandler.eof()
+            self.protocolHandler.wait_confimation()
+            
                 
