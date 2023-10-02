@@ -50,7 +50,7 @@ class ClientHandler:
                 logging.info(f'action: finishing | result: in_progress')
                 eof = make_eof()
                 self.middleware.send_airport(eof)
-            else:
+            else: # check if airport?
                 logging.info(f'action: read | result: success | received: {value}')
                 data = self.airport_serializer.to_bytes(value)
                 self.middleware.send_airport(data)

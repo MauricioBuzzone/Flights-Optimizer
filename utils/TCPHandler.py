@@ -10,7 +10,7 @@ class TCPHandler:
     def __init__(self, socket):
         self.socket = socket
 
-    def read_all(self, bytes_to_read):
+    def read(self, bytes_to_read):
         """
         Receives and returns byte data from the client preventing short reads.
         """
