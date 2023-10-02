@@ -1,4 +1,8 @@
-FROM ubuntu:20.04
+FROM python:3.9.7-slim
 
-RUN apt update && apt install python3 python3-pip -y
-RUN pip3 install pika
+COPY utils /
+COPY model /
+COPY test /
+
+RUN pip install pika
+RUN python -m unittest test_utils.py
