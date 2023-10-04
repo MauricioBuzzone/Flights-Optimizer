@@ -1,10 +1,14 @@
 import socket 
 import signal
 import logging
-from ProtocolHandler import ProtocolHandler
+
+from utils.TCPHandler import SocketBroken
+from utils.protocol import make_airport_eof, make_flight_eof
+from utils.airportSerializer import AirportSerializer
+from utils.flightSerializer import FlightSerializer
+from utils.protocolHandler import ProtocolHandler
+
 from common.clientHandlerMiddleware import ClientHandlerMiddleware
-from airportSerializer import AirportSerializer
-from protocol import make_eof
 
 class ClientHandler:
     def __init__(self, port):
@@ -16,6 +20,7 @@ class ClientHandler:
         signal.signal(signal.SIGTERM, self.__handle_signal)
 
         self.airport_serializer = AirportSerializer()
+        self.flight_serializer = FlightSerializer()
         self.middleware = ClientHandlerMiddleware()
 
     def run(self):
@@ -28,7 +33,13 @@ class ClientHandler:
         """
         while self._server_on:
             client_sock = self.__accept_new_connection() 
-            self.__handle_client_connection(client_sock)
+            if client_sock:
+                self.__handle_client_connection(client_sock)
+
+        self._server_socket.close()
+        logging.info(f'action: release_socket | result: success')
+        self.middleware.stop()
+        logging.info(f'action: release_rabbitmq_conn | result: success')
 
     def __handle_client_connection(self, client_sock):
         """
@@ -37,37 +48,62 @@ class ClientHandler:
         If a problem arises in the communication with the client, the
         client socket will also be closed
         """
-        protocolHandler = ProtocolHandler(client_sock)
+        try:
+            protocolHandler = ProtocolHandler(client_sock)
+            keep_reading = True
+            while keep_reading:
+                t, value = protocolHandler.read()
 
-        keep_reading = True
-        while keep_reading:
-            logging.info('action: read | result: in_progress')
-            t, value = protocolHandler.read()
+                if protocolHandler.is_airport_eof(t):
+                    keep_reading = self.__handle_airport_eof()
 
-            if protocolHandler.is_eof(t):
-                logging.info(f'action: read | result: success | received: EOF')
-                keep_reading = False
-                logging.info(f'action: finishing | result: in_progress')
-                eof = make_eof()
-                self.middleware.send_airport(eof)
-            else: # check if airport?
-                logging.info(f'action: read | result: success | received: {value}')
-                data = self.airport_serializer.to_bytes(value)
-                self.middleware.send_airport(data)
-                
-            protocolHandler.ack()
+                if protocolHandler.is_flight_eof(t):
+                    keep_reading = self.__handle_flight_eof()
 
-        logging.info(f'action: finishing | result: success')
+                if protocolHandler.is_airports(t):
+                    keep_reading = self.__handle_airports(value)
+
+                if protocolHandler.is_flights(t):
+                    keep_reading = self.__handle_flights(value)
+
+                protocolHandler.ack()
+        
+        except (SocketBroken,OSError) as e:
+            logging.error(f'action: receive_message | result: fail | error: {e}')
+        finally:
+            if client_sock:
+                logging.info(f'action: release_client_socket | result: success')
+                client_sock.close()
+                logging.info(f'action: finishing | result: success')
+    
+    def __handle_airport_eof(self):
+        logging.info(f'action: read airport_eof | result: success')
+        eof = make_airport_eof()
+        self.middleware.send_airport(eof)
+        return True
+
+    def __handle_airports(self, value):
+        logging.info(f'action: recived airports | result: success | N: {len(value)}')
+        data = self.airport_serializer.to_bytes(value)
+        self.middleware.send_airport(data)
+        return True
+
+    def __handle_flight_eof(self):
+        logging.info(f'action: read flight_eof | result: success')
+        eof = make_flight_eof()
+        return False
+        
+    def __handle_flights(self, value):
+        #  It's responsible for separating the relevant 
+        #  fields for each query and sending them to different queues.
+        logging.info(f'action: recived flights | result: success | N: {len(value)}')
+        return True
 
     def __accept_new_connection(self):
         """
-        Accept new connections
-
         Function blocks until a connection to a client is made.
         Then connection created is printed and returned
         """
-
-        # Connection arrived
         try:
             logging.info('action: accept_connections | result: in_progress')
             c, addr = self._server_socket.accept()

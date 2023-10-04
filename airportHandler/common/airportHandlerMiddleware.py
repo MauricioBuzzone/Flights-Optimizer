@@ -1,29 +1,26 @@
 import pika
+from middleware.middleware import Middleware
 
-class AirportHandlerMiddleware():
-    def __init__(self, recv_airports_callback):
-
-        self.recv_airports_callback = recv_airports_callback
-
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
-        self.channel = self.connection.channel()
-
-        # publisher-subscribe
+class AirportHandlerMiddleware(Middleware):
+    def __init__(self):
+        super().__init__()
+ 
+        # Declare airports exchange (publisher-subscribe)
         self.channel.exchange_declare(exchange='airports', exchange_type='fanout')
-
         result = self.channel.queue_declare(queue='', exclusive=True)
-        queue_name = result.method.queue
-        self.channel.queue_bind(exchange='airports', queue=queue_name)
+        self.airport_queue_name = result.method.queue
+        self.channel.queue_bind(exchange='airports', queue=self.airport_queue_name)
+ 
+        # Declare flights exchange (producer-consumer)
+        self.channel.exchange_declare(exchange='Q2-flights', exchange_type='direct')
+        result = self.channel.queue_declare(queue='', durable=True)
+        self.flights_queue_name = result.method.queue
+        self.channel.queue_bind(exchange='Q2-flights', queue=self.flights_queue_name)
 
-        self.channel.basic_consume(
-            queue=queue_name,
-            on_message_callback=self.__recv_airport_callback,
-            auto_ack=True) # check autoack
-        
-        self.channel.start_consuming()
-
-    def __recv_airport_callback(self, ch, method, properties, body):
-        self.recv_airports_callback(body)
-
-    def close(self):
-        self.connection.close()
+    
+    def recieve_airports(self, callback):
+        self.consuming_queue(callback, self.airport_queue_name)
+    
+    def receive_flights(self, callback):
+        self.channel.basic_qos(prefetch_count=1)
+        self.consuming_queue(callback, self.flights_queue_name)

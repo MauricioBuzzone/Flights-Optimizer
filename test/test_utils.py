@@ -2,11 +2,12 @@ import os
 import io
 import unittest
 
-from duration import Duration
-from airportSerializer import AirportSerializer
-from flightSerializer import FlightSerializer
-from airport import Airport
-from flight import Flight
+from model.flight import Flight
+from model.airport import Airport
+from model.duration import Duration
+
+from utils.flightSerializer import FlightSerializer
+from utils.airportSerializer import AirportSerializer
 
 class TestUtils(unittest.TestCase):
     def test_serializer_can_packet_two_airport_in_the_same_mesagge(self):
@@ -44,28 +45,26 @@ class TestUtils(unittest.TestCase):
         serializer = FlightSerializer()
 
         flight1 = Flight(
-            id=10,
+            id='10',
             origin='CHI',
             destiny='URU',
             total_distance=3331,
             total_fare=881.123,
             legs=['BOL', 'BRA', 'ARG'],
             flight_duration = Duration(
-                days=1,
                 hours=5,
                 minutes=34,
             ),
         )
 
         flight2 = Flight(
-            id=121,
+            id='121',
             origin='FRA',
             destiny='ENG',
             total_distance=1000,
             total_fare=41,
             legs=[],
             flight_duration = Duration(
-                days=0,
                 hours=0,
                 minutes=50,
             ),
@@ -84,7 +83,6 @@ class TestUtils(unittest.TestCase):
         assert flight1.total_distance == _flight1.total_distance
         assert abs(flight1.total_fare-_flight1.total_fare) < 1e-4
         assert flight1.legs == _flight1.legs
-        assert flight1.flight_duration.days == _flight1.flight_duration.days
         assert flight1.flight_duration.hours == _flight1.flight_duration.hours
         assert flight1.flight_duration.minutes == _flight1.flight_duration.minutes
 
@@ -94,7 +92,6 @@ class TestUtils(unittest.TestCase):
         assert flight2.total_distance == _flight2.total_distance
         assert abs(flight2.total_fare-_flight2.total_fare) < 1e-4
         assert flight2.legs == _flight2.legs
-        assert flight2.flight_duration.days == _flight2.flight_duration.days
         assert flight2.flight_duration.hours == _flight2.flight_duration.hours
         assert flight2.flight_duration.minutes == _flight2.flight_duration.minutes
 

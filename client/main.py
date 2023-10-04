@@ -24,6 +24,7 @@ def initialize_config():
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["ip"] = os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"])
         config_params["airport_path"] = os.getenv('AIRPORT_PATH', config["DEFAULT"]["AIRPORT_PATH"])
+        config_params["flight_path"] = os.getenv('FLIGHT_PATH', config["DEFAULT"]["FLIGHT_PATH"])
         config_params["chunk_size"] = int(os.getenv('CHUNK_SIZE', config["DEFAULT"]["CHUNK_SIZE"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
     except KeyError as e:
@@ -41,13 +42,19 @@ def main():
     ip = config_params["ip"]
     chunk_size = config_params["chunk_size"]
     airport_path = config_params["airport_path"]
+    flight_path = config_params["flight_path"]
 
     initialize_log(logging_level)
 
     # Log config parameters at the beginning of the program to verify the configuration
     # of the component
-    logging.debug(f"action: config | result: success | port: {port} |  ip: {ip} |"
-                  f"chunk_size: {chunk_size} | airport_path: {airport_path} | logging_level: {logging_level}")
+    logging.debug(f'''action: config | result: success 
+                  | port: {port} 
+                  |  ip: {ip} 
+                  | chunk_size: {chunk_size} 
+                  | airport_path: {airport_path}
+                  | flight_path: {flight_path} 
+                  | logging_level: {logging_level}''')
 
     # Initialize server and start server loop
     client = Client(config_params)

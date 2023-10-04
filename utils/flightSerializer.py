@@ -1,13 +1,11 @@
-import io
-import struct
-from serializer import Serializer
-from protocol import TlvTypes, SIZE_LENGTH
-from protocol import integer_to_bytes, integer_from_bytes
-from protocol import string_to_bytes, string_from_bytes
-from protocol import float_to_bytes, float_from_bytes
-from protocol import code_to_bytes
-from flight import Flight
-from duration import Duration
+from utils.serializer import Serializer
+from utils.protocol import TlvTypes, SIZE_LENGTH
+from utils.protocol import integer_to_bytes, integer_from_bytes
+from utils.protocol import string_to_bytes, string_from_bytes
+from utils.protocol import float_to_bytes, float_from_bytes
+from utils.protocol import code_to_bytes
+from model.flight import Flight
+from model.duration import Duration
 
 class FlightSerializer(Serializer):
 
@@ -27,7 +25,7 @@ class FlightSerializer(Serializer):
 
     def from_raw_dict(self, raw_dict):
         return Flight(
-            id=integer_from_bytes(raw_dict[TlvTypes.FLIGHT_ID]),
+            id=string_from_bytes(raw_dict[TlvTypes.FLIGHT_ID]),
             origin=string_from_bytes(raw_dict[TlvTypes.FLIGHT_ORIGIN]),
             destiny=string_from_bytes(raw_dict[TlvTypes.FLIGHT_DESTINY]),
             total_distance=integer_from_bytes(raw_dict[TlvTypes.FLIGHT_DISTANCE]),
@@ -36,7 +34,6 @@ class FlightSerializer(Serializer):
                 string_from_bytes(raw_leg) for raw_leg in raw_dict[TlvTypes.FLIGHT_LEG]
             ],
             flight_duration=Duration(
-                days=integer_from_bytes(raw_dict[TlvTypes.FLIGHT_DURATION_DAYS]),
                 hours=integer_from_bytes(raw_dict[TlvTypes.FLIGHT_DURATION_HOURS]),
                 minutes=integer_from_bytes(raw_dict[TlvTypes.FLIGHT_DURATION_MINUTES]),
             ),
@@ -47,14 +44,13 @@ class FlightSerializer(Serializer):
 
         for flight in chunk:
             raw_flight = b''
-            raw_flight += integer_to_bytes(flight.id, TlvTypes.FLIGHT_ID)
+            raw_flight += string_to_bytes(flight.id, TlvTypes.FLIGHT_ID)
             raw_flight += string_to_bytes(flight.origin, TlvTypes.FLIGHT_ORIGIN)
             raw_flight += string_to_bytes(flight.destiny, TlvTypes.FLIGHT_DESTINY)
             raw_flight += integer_to_bytes(flight.total_distance, TlvTypes.FLIGHT_DISTANCE)
             raw_flight += float_to_bytes(flight.total_fare, TlvTypes.FLIGHT_FARE)
             for leg in flight.legs:
                 raw_flight += string_to_bytes(leg, TlvTypes.FLIGHT_LEG)
-            raw_flight += integer_to_bytes(flight.flight_duration.days, TlvTypes.FLIGHT_DURATION_DAYS)
             raw_flight += integer_to_bytes(flight.flight_duration.hours, TlvTypes.FLIGHT_DURATION_HOURS)
             raw_flight += integer_to_bytes(flight.flight_duration.minutes, TlvTypes.FLIGHT_DURATION_MINUTES)
 
