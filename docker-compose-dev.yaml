@@ -19,6 +19,18 @@ services:
     restart: on-failure
     volumes:
     - ./airportHandler/config.ini:/config.ini
+  airportHandler2:
+    container_name: airportHandler2
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: airport_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./airportHandler/config.ini:/config.ini
   client:
     container_name: client
     depends_on:
@@ -38,6 +50,7 @@ services:
     container_name: clientHandler
     depends_on:
     - airportHandler1
+    - airportHandler2
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1

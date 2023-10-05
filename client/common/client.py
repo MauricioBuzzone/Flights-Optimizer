@@ -3,6 +3,8 @@ import logging
 import csv
 import re
 
+import time
+
 from model.flight import Flight
 from model.airport import Airport
 from model.duration import Duration
@@ -28,6 +30,8 @@ class Client:
         # Read airports.csv and send to the system.
         self.connect()
         self.send_airports()
+
+        time.sleep(5)
 
         # Read flights.csv and send to the system.
         self.send_flights()

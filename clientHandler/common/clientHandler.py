@@ -6,6 +6,7 @@ from utils.TCPHandler import SocketBroken
 from utils.protocol import make_airport_eof, make_flight_eof
 from utils.airportSerializer import AirportSerializer
 from utils.flightSerializer import FlightSerializer
+from utils.flightQ2Serializer import FlightQ2Serializer
 from utils.protocolHandler import ProtocolHandler
 
 from common.clientHandlerMiddleware import ClientHandlerMiddleware
@@ -21,6 +22,7 @@ class ClientHandler:
 
         self.airport_serializer = AirportSerializer()
         self.flight_serializer = FlightSerializer()
+        self.flight_q2_serializer = FlightQ2Serializer()
         self.middleware = ClientHandlerMiddleware()
 
     def run(self):
@@ -77,15 +79,17 @@ class ClientHandler:
                 logging.info(f'action: finishing | result: success')
     
     def __handle_airport_eof(self):
-        logging.info(f'action: read airport_eof | result: success')
         eof = make_airport_eof()
         self.middleware.send_airport(eof)
+
+        logging.info(f'action: send_airports | value: EOF | result: success')
         return True
 
     def __handle_airports(self, value):
-        logging.info(f'action: recived airports | result: success | N: {len(value)}')
         data = self.airport_serializer.to_bytes(value)
         self.middleware.send_airport(data)
+
+        logging.debug(f'action: send_airports | len(value): {len(value)} | result: success')
         return True
 
     def __handle_flight_eof(self):
@@ -93,10 +97,21 @@ class ClientHandler:
         eof = make_flight_eof()
         return False
         
-    def __handle_flights(self, value):
+    def __handle_flights(self, flights):
         #  It's responsible for separating the relevant 
         #  fields for each query and sending them to different queues.
-        logging.info(f'action: recived flights | result: success | N: {len(value)}')
+        logging.info(f'action: recived flights | result: success | N: {len(flights)}')
+
+        # Q1:
+
+        # Q2:
+        data = self.flight_q2_serializer.to_bytes(flights)
+        self.middleware.send_flightsQ2(data)
+
+        # Q3:
+
+        # Q4:
+
         return True
 
     def __accept_new_connection(self):

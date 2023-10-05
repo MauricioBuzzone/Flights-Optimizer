@@ -15,7 +15,7 @@ class Middleware:
         self.active_channel = False
         self._callback = self.__no_callback
 
-    def stop(self):    
+    def stop(self):
         logging.info(f"action: stop_middleware | result: in_progress")
         if self.active_channel:
             logging.info(f"action: stop_middleware | close channel")
