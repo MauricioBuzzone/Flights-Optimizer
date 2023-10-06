@@ -6,6 +6,7 @@ from utils.TCPHandler import SocketBroken
 from utils.protocol import make_airport_eof, make_flight_eof
 from utils.airportSerializer import AirportSerializer
 from utils.flightSerializer import FlightSerializer
+from utils.flightQ1Serializer import FlightQ1Serializer
 from utils.flightQ2Serializer import FlightQ2Serializer
 from utils.protocolHandler import ProtocolHandler
 
@@ -22,6 +23,7 @@ class ClientHandler:
 
         self.airport_serializer = AirportSerializer()
         self.flight_serializer = FlightSerializer()
+        self.flight_q1_serializer = FlightQ1Serializer()
         self.flight_q2_serializer = FlightQ2Serializer()
         self.middleware = ClientHandlerMiddleware()
 
@@ -103,6 +105,8 @@ class ClientHandler:
         logging.info(f'action: recived flights | result: success | N: {len(flights)}')
 
         # Q1:
+        data = self.flight_q1_serializer.to_bytes(flights)
+        self.middleware.send_flightsQ1(data)
 
         # Q2:
         data = self.flight_q2_serializer.to_bytes(flights)

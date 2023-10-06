@@ -2,11 +2,13 @@ import csv
 import io
 import logging
 import signal
+from utils.flightQ1Serializer import FlightQ1Serializer
 from utils.flightQ2Serializer import FlightQ2Serializer
 from common.resultHandlerMiddleware import ResultHandlerMiddleware
 
 class ResultHandler():
     def __init__(self):
+        self.flightQ1Serializer = FlightQ1Serializer()
         self.flightQ2Serializer = FlightQ2Serializer()
         signal.signal(signal.SIGTERM, self.__handle_signal)
 
@@ -25,7 +27,7 @@ class ResultHandler():
     def save_results(self, results_raw, results_type):
         reader = io.BytesIO(results_raw)
         if results_type == 'Q1':
-            results = [] # self.flightQ1Serializer.from_chunk(reader)
+            results = self.flightQ1Serializer.from_chunk(reader)
         elif results_type == 'Q2':
             results = self.flightQ2Serializer.from_chunk(reader)
         elif results_type == 'Q3':

@@ -7,7 +7,7 @@ from utils.protocol import code_to_bytes
 from model.flight import Flight
 from model.duration import Duration
 
-class FlightSerializer(Serializer):
+class FlightQ1Serializer(Serializer):
 
     def make_raw_dict(self):
         return {
@@ -15,7 +15,6 @@ class FlightSerializer(Serializer):
             TlvTypes.FLIGHT_ID: b'',
             TlvTypes.FLIGHT_ORIGIN: b'',
             TlvTypes.FLIGHT_DESTINY: b'',
-            TlvTypes.FLIGHT_DISTANCE: b'',
             TlvTypes.FLIGHT_FARE: b'',
             TlvTypes.FLIGHT_LEG: [],
             TlvTypes.FLIGHT_DURATION_HOURS: b'',
@@ -24,10 +23,10 @@ class FlightSerializer(Serializer):
 
     def from_raw_dict(self, raw_dict):
         return Flight(
+            # mandatory
             id=string_from_bytes(raw_dict[TlvTypes.FLIGHT_ID]),
             origin=string_from_bytes(raw_dict[TlvTypes.FLIGHT_ORIGIN]),
             destiny=string_from_bytes(raw_dict[TlvTypes.FLIGHT_DESTINY]),
-            total_distance=integer_from_bytes(raw_dict[TlvTypes.FLIGHT_DISTANCE]),
             total_fare=float_from_bytes(raw_dict[TlvTypes.FLIGHT_FARE]),
             legs=[
                 string_from_bytes(raw_leg) for raw_leg in raw_dict[TlvTypes.FLIGHT_LEG]
@@ -36,6 +35,8 @@ class FlightSerializer(Serializer):
                 hours=integer_from_bytes(raw_dict[TlvTypes.FLIGHT_DURATION_HOURS]),
                 minutes=integer_from_bytes(raw_dict[TlvTypes.FLIGHT_DURATION_MINUTES]),
             ),
+            # default
+            total_distance=0,
         )
 
     def to_bytes(self, chunk: list):
@@ -46,7 +47,6 @@ class FlightSerializer(Serializer):
             raw_flight += string_to_bytes(flight.id, TlvTypes.FLIGHT_ID)
             raw_flight += string_to_bytes(flight.origin, TlvTypes.FLIGHT_ORIGIN)
             raw_flight += string_to_bytes(flight.destiny, TlvTypes.FLIGHT_DESTINY)
-            raw_flight += integer_to_bytes(flight.total_distance, TlvTypes.FLIGHT_DISTANCE)
             raw_flight += float_to_bytes(flight.total_fare, TlvTypes.FLIGHT_FARE)
             for leg in flight.legs:
                 raw_flight += string_to_bytes(leg, TlvTypes.FLIGHT_LEG)

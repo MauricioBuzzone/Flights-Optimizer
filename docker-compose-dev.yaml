@@ -55,6 +55,8 @@ services:
     depends_on:
     - airportHandler1
     - airportHandler2
+    - query1Handler1
+    - query1Handler2
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
@@ -65,6 +67,34 @@ services:
     restart: on-failure
     volumes:
     - ./clientHandler/config.ini:/config.ini
+  query1Handler1:
+    container_name: query1Handler1
+    depends_on:
+    - resultHandler
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: query1_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query1Handler/config.ini:/config.ini
+  query1Handler2:
+    container_name: query1Handler2
+    depends_on:
+    - resultHandler
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: query1_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query1Handler/config.ini:/config.ini
   resultHandler:
     container_name: resultHandler
     entrypoint: python3 /main.py

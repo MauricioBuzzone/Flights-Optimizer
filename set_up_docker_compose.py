@@ -2,7 +2,7 @@
 import yaml
 import argparse
 
-from config import AMOUNT_OF_AIRPORT_HANDLER
+from config import AMOUNT_OF_AIRPORT_HANDLER, AMOUNT_OF_QUERY1_HANDLER
 
 def create_network():
     return {
@@ -47,7 +47,30 @@ def create_clientHandler():
         'volumes': [
             './clientHandler/config.ini:/config.ini',
         ],
-        'depends_on': [f'airportHandler{i+1}' for i in range(AMOUNT_OF_AIRPORT_HANDLER)],
+        'depends_on':
+            [f'airportHandler{i+1}' for i in range(AMOUNT_OF_AIRPORT_HANDLER)] + \
+            [f'query1Handler{i+1}' for i in range(AMOUNT_OF_QUERY1_HANDLER)],
+        'networks': [
+            'middleware_testing_net',
+        ],
+        'restart': 'on-failure',
+    }
+
+def create_query1Handler(i):
+    return {
+        'container_name': f'query1Handler{i}',
+        'image': 'query1_handler:latest',
+        'entrypoint': 'python3 /main.py',
+        'environment': [
+            'PYTHONUNBUFFERED=1',
+            'LOGGING_LEVEL=INFO',
+        ],
+        'volumes': [
+            './query1Handler/config.ini:/config.ini',
+        ],
+        'depends_on': [
+            'resultHandler',
+        ],
         'networks': [
             'middleware_testing_net',
         ],
@@ -104,6 +127,9 @@ def create_file():
 
     for i in range(AMOUNT_OF_AIRPORT_HANDLER):
         config['services'][f'airportHandler{i+1}'] = create_airportHandler(i+1)
+
+    for i in range(AMOUNT_OF_QUERY1_HANDLER):
+        config['services'][f'query1Handler{i+1}'] = create_query1Handler(i+1)
 
     config['services']['resultHandler'] = create_resultHandler()
 
