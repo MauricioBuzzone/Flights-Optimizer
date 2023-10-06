@@ -7,36 +7,54 @@ class TlvTypes():
     SIZE_CODE_MSG = 4
 
     # types
-    EOF = 0
-
+    AIRPORT_EOF = 0
     AIRPORT_CHUNK = 1
     AIRPORT = 2
     AIRPORT_COD = 3
     AIRPORT_LATITUDE = 4
     AIRPORT_LONGITUDE = 5
 
-    FLIGHT_CHUNK = 6
-    FLIGHT = 7
-    FLIGHT_ID = 8
-    FLIGHT_ORIGIN = 9
-    FLIGHT_DESTINY = 10
-    FLIGHT_DISTANCE = 11
-    FLIGHT_FARE = 12
-    FLIGHT_LEG = 13
-    FLIGHT_DURATION_DAYS = 14
-    FLIGHT_DURATION_HOURS = 15
-    FLIGHT_DURATION_MINUTES = 16
+    FLIGHT_EOF = 6
+    FLIGHT_CHUNK = 7
+    FLIGHT = 8
+    FLIGHT_ID = 9
+    FLIGHT_ORIGIN = 10
+    FLIGHT_DESTINY = 11
+    FLIGHT_DISTANCE = 12
+    FLIGHT_FARE = 13
+    FLIGHT_LEG = 14
+    FLIGHT_DURATION_DAYS = 15
+    FLIGHT_DURATION_HOURS = 16
+    FLIGHT_DURATION_MINUTES = 17
 
-    ACK = 17
+    ACK = 18
 
-def is_eof(bytes):
+def is_airport_eof(bytes):
     if len(bytes) == TlvTypes.SIZE_CODE_MSG:
         data = struct.unpack("!i",bytes)[0]
-        return data == TlvTypes.EOF
+        return data == TlvTypes.AIRPORT_EOF
     return False
 
-def make_eof():
-    return code_to_bytes(TlvTypes.EOF)
+def is_flight_eof(bytes):
+    if len(bytes) == TlvTypes.SIZE_CODE_MSG + SIZE_LENGTH:
+        data, n = struct.unpack("!ii",bytes)
+        return data == TlvTypes.FLIGHT_EOF
+    return False
+
+def get_closed_peers(bytes):
+    if len(bytes) == TlvTypes.SIZE_CODE_MSG + SIZE_LENGTH:
+        data, n = struct.unpack("!ii",bytes)
+        return n
+    return -1
+
+
+def make_airport_eof():
+    return code_to_bytes(TlvTypes.AIRPORT_EOF)
+
+def make_flight_eof(i):
+    bytes = code_to_bytes(TlvTypes.FLIGHT_EOF)
+    bytes += int.to_bytes(i,SIZE_LENGTH, 'big')
+    return bytes
 
 def code_to_bytes(code: int):
     return int.to_bytes(code, TlvTypes.SIZE_CODE_MSG, 'big')

@@ -1,29 +1,58 @@
-import pika
+import logging
+from middleware.middleware import Middleware
 
-class AirportHandlerMiddleware():
-    def __init__(self, recv_airports_callback):
+class AirportHandlerMiddleware(Middleware):
+    def __init__(self):
+        super().__init__()
+ 
+        # Declare airports exchange (publisher-subscriber)
 
-        self.recv_airports_callback = recv_airports_callback
-
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
-        self.channel = self.connection.channel()
-
-        # publisher-subscribe
         self.channel.exchange_declare(exchange='airports', exchange_type='fanout')
-
         result = self.channel.queue_declare(queue='', exclusive=True)
-        queue_name = result.method.queue
-        self.channel.queue_bind(exchange='airports', queue=queue_name)
+        self.airport_queue_name = result.method.queue 
+        logging.info(f"action: declare_airport_queue | queue: {self.airport_queue_name}")
 
-        self.channel.basic_consume(
-            queue=queue_name,
-            on_message_callback=self.__recv_airport_callback,
-            auto_ack=True) # check autoack
-        
+        # Declare flights Q2 queue (producer-consumer)
+        self.flights_queue_name = 'Q2-flights'
+        self.channel.queue_declare(queue=self.flights_queue_name, durable=True)
+        logging.info(f"action: declare_flights_queue | queue: {self.flights_queue_name}")
+
+        self.channel.exchange_declare(exchange='results', exchange_type='direct')
+
+
+    def start(self):
         self.channel.start_consuming()
 
-    def __recv_airport_callback(self, ch, method, properties, body):
-        self.recv_airports_callback(body)
+    def callback_airports(self, ch, method, properties, body):
+        self._callback_airports(body)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    def close(self):
-        self.connection.close()
+    def listen_airports(self, callback):
+        self._callback_airports = callback
+        self.channel.basic_consume(queue=self.airport_queue_name, on_message_callback=self.callback_airports)
+        self.channel.queue_bind(exchange='airports', queue=self.airport_queue_name)
+
+    def stop_listen_airports(self):
+        self.channel.queue_unbind(exchange='airports', queue=self.airport_queue_name)
+
+    def callback_flights(self, ch, method, properties, body):
+        self._callback_flights(body)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    def listen_flights(self, callback):
+        self._callback_flights = callback
+        self.channel.basic_consume(queue=self.flights_queue_name, on_message_callback=self.callback_flights)
+
+    def stop_listen_flights(self):
+        # stop consuming from 'Q2-flights' queue
+        return
+
+    def recieve_airports(self, callback):
+        self.consuming_queue(callback, self.airport_queue_name)
+
+    def receive_flights(self, callback):
+        self.channel.basic_qos(prefetch_count=1)
+        self.consuming_queue(callback, self.flights_queue_name)
+
+    def publish_results(self, results):
+        self.send_msg(routing_key='Q2', data=results, exchange='results')

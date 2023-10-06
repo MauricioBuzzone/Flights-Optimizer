@@ -1,39 +1,85 @@
+import io
+import signal
 import logging
+
 from geopy.distance import geodesic
 from common.airportHandlerMiddleware import AirportHandlerMiddleware
-from airportSerializer import AirportSerializer
-from protocol import is_eof
+from utils.airportSerializer import AirportSerializer
+from utils.flightQ2Serializer import FlightQ2Serializer
+from utils.protocol import is_airport_eof, is_flight_eof
+
 
 class AirportHandler():
     def __init__(self):
         self.airports = {} #cod: (lat, lon)
         self.airportSerializer = AirportSerializer()
+        self.flightSerializer = FlightQ2Serializer()
+        signal.signal(signal.SIGTERM, self.__handle_signal)
 
         # last thing to do:
-        self.middleware = AirportHandlerMiddleware(self.save_airports)
+        self.middleware = AirportHandlerMiddleware()
 
     def run(self):
-        self.recv_airports()
+        logging.info(f'action: listen_airports | result: in_progress')
+        self.middleware.listen_airports(self.recv_airports)
+        logging.info(f'action: listen_airports | result: success')
 
-    def save_airports(self, airports_raw):
-        if is_eof(airports_raw):
-            logging.info(f'action: EOF')
-            # declarar la cola p/c para los vuelos.
+        self.middleware.start()
+
+        self.middleware.stop()
+
+    def recv_airports(self, airports_raw):
+        if is_airport_eof(airports_raw):
+            logging.info(f'action: recv_airports | result: EOF')
+            self.middleware.stop_listen_airports()
+            logging.info(f'action: stop_receiving_airports | result: success')
+
+            logging.info(f'action: listen_flights | result: in_progress')
+            self.middleware.listen_flights(self.recv_flights)
+            logging.info(f'action: listen_flights | result: success')
             return 
 
-        
-        airports = self.airportSerializer.from_bytes(airports_raw)
-        logging.info(f'action: new_chunk_received | chunck_len {len(airports)}')
-        
-        
-        location = (0,0)
-        for airport in airports:
-            airport_loc = (airport.latitude, airport.longitude)
+        reader = io.BytesIO(airports_raw)
+        airports = self.airportSerializer.from_chunk(reader)
+        logging.debug(f'action: new_chunk_airports | chunck_len: {len(airports)}')
 
-            distance = geodesic(location, airport_loc).miles
+        for airport in airports:
             self.airports[airport.cod] = (airport.latitude, airport.longitude)
-            logging.info(f'action: save | value: {airport} | distance: {distance}')
-            location = airport_loc
+            logging.debug(f'action: save_airport | value: {airport}')
 
         # save to file
         # self.middleware.ack()?
+
+    def recv_flights(self, flights_raw):
+        if is_flight_eof(flights_raw):
+            logging.info(f'action: recv_flights | result: EOF')
+            self.middleware.stop_listen_flights()
+            logging.info(f'action: stop_receiving_flights | result: success')
+            return
+
+        reader = io.BytesIO(flights_raw)
+        flights = self.flightSerializer.from_chunk(reader)
+        logging.info(f'action: new_chunk_flights | chunck_len: {len(flights)}')
+
+        filtered_flights = []
+        for flight in flights:
+            if not (flight.origin in self.airports):
+                logging.info(f'action: Q2 filter | result: origin({flight.origin}) not in database')
+                continue
+            if not (flight.destiny in self.airports):
+                logging.info(f'action: Q2 filter | result: destiny({flight.destiny}) not in database')
+                continue
+
+            distance = geodesic(self.airports[flight.origin], self.airports[flight.destiny])
+            if flight.total_distance > 4 * distance:
+                filtered_flights.append(flight)
+                logging.info(f'action: publish_flight | value: {flight}')
+        
+        if filtered_flights:
+            data = self.flightSerializer.to_bytes(filtered_flights)
+            self.middleware.publish_results(data)
+
+    def __handle_signal(self, signum, frame):
+        logging.info(f'action: stop_handler | result: in_progress | singal {signum}')
+        self.middleware.stop()
+        logging.info(f'action: stop_handler | result: success')

@@ -9,6 +9,8 @@ networks:
 services:
   airportHandler1:
     container_name: airportHandler1
+    depends_on:
+    - resultHandler
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
@@ -21,30 +23,8 @@ services:
     - ./airportHandler/config.ini:/config.ini
   airportHandler2:
     container_name: airportHandler2
-    entrypoint: python3 /main.py
-    environment:
-    - PYTHONUNBUFFERED=1
-    - LOGGING_LEVEL=INFO
-    image: airport_handler:latest
-    networks:
-    - middleware_testing_net
-    restart: on-failure
-    volumes:
-    - ./airportHandler/config.ini:/config.ini
-  airportHandler3:
-    container_name: airportHandler3
-    entrypoint: python3 /main.py
-    environment:
-    - PYTHONUNBUFFERED=1
-    - LOGGING_LEVEL=INFO
-    image: airport_handler:latest
-    networks:
-    - middleware_testing_net
-    restart: on-failure
-    volumes:
-    - ./airportHandler/config.ini:/config.ini
-  airportHandler4:
-    container_name: airportHandler4
+    depends_on:
+    - resultHandler
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
@@ -75,8 +55,8 @@ services:
     depends_on:
     - airportHandler1
     - airportHandler2
-    - airportHandler3
-    - airportHandler4
+    - query1Handler1
+    - query1Handler2
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
@@ -87,4 +67,46 @@ services:
     restart: on-failure
     volumes:
     - ./clientHandler/config.ini:/config.ini
+  query1Handler1:
+    container_name: query1Handler1
+    depends_on:
+    - resultHandler
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=2
+    image: query1_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query1Handler/config.ini:/config.ini
+  query1Handler2:
+    container_name: query1Handler2
+    depends_on:
+    - resultHandler
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=2
+    image: query1_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query1Handler/config.ini:/config.ini
+  resultHandler:
+    container_name: resultHandler
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: result_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./resultHandler/config.ini:/config.ini
 version: '3.9'

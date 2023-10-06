@@ -1,13 +1,10 @@
-import logging
-import io
-import struct
-from serializer import Serializer
-from protocol import TlvTypes, SIZE_LENGTH
-from protocol import integer_to_bytes, integer_from_bytes
-from protocol import string_to_bytes, string_from_bytes
-from protocol import float_to_bytes, float_from_bytes
-from protocol import code_to_bytes
-from airport import Airport
+from utils.serializer import Serializer
+from utils.protocol import TlvTypes, SIZE_LENGTH
+from utils.protocol import integer_to_bytes, integer_from_bytes
+from utils.protocol import string_to_bytes, string_from_bytes
+from utils.protocol import float_to_bytes, float_from_bytes
+from utils.protocol import code_to_bytes
+from model.airport import Airport
 
 class AirportSerializer(Serializer):
 
@@ -48,37 +45,3 @@ class AirportSerializer(Serializer):
         result += raw_chunk
 
         return result
-
-##############################
-# TESTING AIRPORT SERIALIZER #
-##############################
-
-serializer = AirportSerializer()
-
-airport1 = Airport(
-    cod='ARG',
-    latitude=123.123,
-    longitude=-413.3,
-)
-
-airport2 = Airport(
-    cod='FRA',
-    latitude=0.0,
-    longitude=12,
-)
-
-
-chunk = serializer.to_bytes([airport1, airport2])
-reader = io.BytesIO(chunk)
-serial = serializer.from_chunk(reader)
-
-_airport1 = serial[0]
-_airport2 = serial[1]
-
-assert airport1.cod == _airport1.cod
-assert abs(airport1.latitude-_airport1.latitude) < 1e-4
-assert abs(airport1.longitude-_airport1.longitude) < 1e-4
-
-assert airport2.cod == _airport2.cod
-assert abs(airport2.latitude-_airport2.latitude) < 1e-4
-assert abs(airport2.longitude-_airport2.longitude) < 1e-4

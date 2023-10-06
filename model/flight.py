@@ -1,4 +1,4 @@
-from duration import Duration
+from model.duration import Duration
 
 class Flight:
     def __init__(self, id:int, origin:str, destiny:str, total_distance: int,
