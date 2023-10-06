@@ -75,6 +75,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=INFO
+    - PEERS=2
     image: query1_handler:latest
     networks:
     - middleware_testing_net
@@ -89,6 +90,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=INFO
+    - PEERS=2
     image: query1_handler:latest
     networks:
     - middleware_testing_net

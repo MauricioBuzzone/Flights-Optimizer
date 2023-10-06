@@ -64,6 +64,7 @@ def create_query1Handler(i):
         'environment': [
             'PYTHONUNBUFFERED=1',
             'LOGGING_LEVEL=INFO',
+            'PEERS='+str(AMOUNT_OF_QUERY1_HANDLER),
         ],
         'volumes': [
             './query1Handler/config.ini:/config.ini',

@@ -96,7 +96,11 @@ class ClientHandler:
 
     def __handle_flight_eof(self):
         logging.info(f'action: read flight_eof | result: success')
-        eof = make_flight_eof()
+        eof = make_flight_eof(0)
+        self.middleware.send_flightsQ1(eof)
+        #self.middleware.send_flightsQ2(eof)
+        #self.middleware.send_flightsQ3(eof)
+        #self.middleware.send_flightsQ4(eof)
         return False
         
     def __handle_flights(self, flights):

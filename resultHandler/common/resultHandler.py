@@ -4,6 +4,8 @@ import logging
 import signal
 from utils.flightQ1Serializer import FlightQ1Serializer
 from utils.flightQ2Serializer import FlightQ2Serializer
+from utils.protocol import is_flight_eof
+
 from common.resultHandlerMiddleware import ResultHandlerMiddleware
 
 class ResultHandler():
@@ -27,6 +29,8 @@ class ResultHandler():
     def save_results(self, results_raw, results_type):
         reader = io.BytesIO(results_raw)
         if results_type == 'Q1':
+            if is_flight_eof(results_raw):
+                logging.info(f'action: recv EOF Query1| result: success ')
             results = self.flightQ1Serializer.from_chunk(reader)
         elif results_type == 'Q2':
             results = self.flightQ2Serializer.from_chunk(reader)

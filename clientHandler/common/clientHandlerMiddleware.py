@@ -11,6 +11,9 @@ class ClientHandlerMiddleware(Middleware):
         # Declare exchange to send flights to QUERY2
         self.channel.queue_declare(queue='Q2-flights', durable=True)
 
+        # Declare exchange to send flights to QUERY1
+        self.channel.queue_declare(queue='Q1-flights', durable=True)
+
     def send_airport(self, bytes):
         self.send_msg(routing_key='', data=bytes, exchange='airports')
 
