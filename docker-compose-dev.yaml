@@ -9,6 +9,8 @@ networks:
 services:
   airportHandler1:
     container_name: airportHandler1
+    depends_on:
+    - resultHandler
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
@@ -21,6 +23,8 @@ services:
     - ./airportHandler/config.ini:/config.ini
   airportHandler2:
     container_name: airportHandler2
+    depends_on:
+    - resultHandler
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
@@ -61,4 +65,16 @@ services:
     restart: on-failure
     volumes:
     - ./clientHandler/config.ini:/config.ini
+  resultHandler:
+    container_name: resultHandler
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: result_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./resultHandler/config.ini:/config.ini
 version: '3.9'

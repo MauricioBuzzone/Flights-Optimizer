@@ -66,6 +66,27 @@ def create_airportHandler(i):
         'volumes': [
             './airportHandler/config.ini:/config.ini',
         ],
+        'depends_on': [
+            'resultHandler',
+        ],
+        'networks': [
+            'middleware_testing_net',
+        ],
+        'restart': 'on-failure',
+    }
+
+def create_resultHandler():
+    return {
+        'container_name': 'resultHandler',
+        'image': 'result_handler:latest',
+        'entrypoint': 'python3 /main.py',
+        'environment': [
+            'PYTHONUNBUFFERED=1',
+            'LOGGING_LEVEL=INFO',
+        ],
+        'volumes': [
+            './resultHandler/config.ini:/config.ini',
+        ],
         'networks': [
             'middleware_testing_net',
         ],
@@ -83,6 +104,8 @@ def create_file():
 
     for i in range(AMOUNT_OF_AIRPORT_HANDLER):
         config['services'][f'airportHandler{i+1}'] = create_airportHandler(i+1)
+
+    config['services']['resultHandler'] = create_resultHandler()
 
     config['networks'] = {}
     config['networks']['middleware_testing_net'] = create_network()

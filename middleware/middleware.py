@@ -41,7 +41,7 @@ class Middleware:
     def consuming_queue(self, callback, queue_consume):
         if self.active_channel:
             raise ChannelAlreadyConsuming()
-        
+
         self.active_channel = True
         self._callback = callback
         logging.info(f"action: consuming_queue | queue: {queue_consume}")

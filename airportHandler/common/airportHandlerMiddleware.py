@@ -1,12 +1,11 @@
 import logging
-import pika
 from middleware.middleware import Middleware
 
 class AirportHandlerMiddleware(Middleware):
     def __init__(self):
         super().__init__()
  
-        # Declare airports exchange (publisher-subscribe)
+        # Declare airports exchange (publisher-subscriber)
 
         self.channel.exchange_declare(exchange='airports', exchange_type='fanout')
         result = self.channel.queue_declare(queue='', exclusive=True)
@@ -17,6 +16,9 @@ class AirportHandlerMiddleware(Middleware):
         self.flights_queue_name = 'Q2-flights'
         self.channel.queue_declare(queue=self.flights_queue_name, durable=True)
         logging.info(f"action: declare_flights_queue | queue: {self.flights_queue_name}")
+
+        self.channel.exchange_declare(exchange='results', exchange_type='direct')
+
 
     def start(self):
         self.channel.start_consuming()
@@ -51,3 +53,6 @@ class AirportHandlerMiddleware(Middleware):
     def receive_flights(self, callback):
         self.channel.basic_qos(prefetch_count=1)
         self.consuming_queue(callback, self.flights_queue_name)
+
+    def publish_results(self, results):
+        self.send_msg(routing_key='Q2', data=results, exchange='results')

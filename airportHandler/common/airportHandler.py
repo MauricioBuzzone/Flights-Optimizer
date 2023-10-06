@@ -61,6 +61,7 @@ class AirportHandler():
         flights = self.flightSerializer.from_chunk(reader)
         logging.info(f'action: new_chunk_flights | chunck_len: {len(flights)}')
 
+        filtered_flights = []
         for flight in flights:
             if not (flight.origin in self.airports):
                 logging.info(f'action: Q2 filter | result: origin({flight.origin}) not in database')
@@ -71,8 +72,12 @@ class AirportHandler():
 
             distance = geodesic(self.airports[flight.origin], self.airports[flight.destiny])
             if flight.total_distance > 4 * distance:
-                # self.middleware.publish(flight)
+                filtered_flights.append(flight)
                 logging.info(f'action: publish_flight | value: {flight}')
+        
+        if filtered_flights:
+            data = self.flightSerializer.to_bytes(filtered_flights)
+            self.middleware.publish_results(data)
 
     def __handle_signal(self, signum, frame):
         logging.info(f'action: stop_handler | result: in_progress | singal {signum}')
