@@ -2,8 +2,8 @@ docker-image:
 	docker build -f ./base-images/python-base.dockerfile -t "python-base:latest" .
 	docker build -f ./client/Dockerfile -t "client:latest" .
 	docker build -f ./clientHandler/Dockerfile -t "client_handler:latest" .
-	docker build -f ./query1Handler/Dockerfile -t "query1_handler:latest" .
-	docker build -f ./airportHandler/Dockerfile -t "airport_handler:latest" .
+	docker build -f ./query1/Dockerfile -t "query1_handler:latest" .
+	docker build -f ./query2/Dockerfile -t "query2_handler:latest" .
 	docker build -f ./resultHandler/Dockerfile -t "result_handler:latest" .
 .PHONY: docker-image
 

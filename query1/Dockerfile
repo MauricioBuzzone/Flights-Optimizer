@@ -1,5 +1,5 @@
 FROM python-base:latest
 
-COPY query1Handler /
+COPY query1 /
 
 ENTRYPOINT ["/bin/sh"]

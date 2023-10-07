@@ -2,7 +2,7 @@ import io
 import logging
 import signal
 
-from common.query1HandlerMiddleware import Query1HandlerMiddleware
+from common.query1Middleware import Query1Middleware
 from utils.flightQ1Serializer import FlightQ1Serializer
 from utils.protocol import is_flight_eof, get_closed_peers, make_flight_eof
 
@@ -13,7 +13,7 @@ class Query1Handler():
         self.flightSerializer = FlightQ1Serializer()
 
         # last thing to do:
-        self.middleware = Query1HandlerMiddleware()
+        self.middleware = Query1Middleware()
 
     def run(self):
         logging.info(f'action: listen_flights | result: in_progress')

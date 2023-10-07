@@ -2,6 +2,6 @@ FROM python-base:latest
 
 RUN pip3 install geopy
 
-COPY airportHandler /
+COPY query2 /
 
 ENTRYPOINT ["/bin/sh"]
