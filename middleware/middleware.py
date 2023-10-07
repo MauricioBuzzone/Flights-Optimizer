@@ -13,7 +13,16 @@ class Middleware:
         self.channel = self.connection.channel()
         self.active_connection = True
         self.active_channel = False
-        self._callback = self.__no_callback
+        self.callback_func = self.__no_callback
+
+    def start(self):
+        self.channel.start_consuming()
+
+    def callback(self, ch, method, properties, body):
+        keep_going = self.callback_func(body)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+        if not keep_going:
+            self.stop()
 
     def stop(self):
         logging.info(f"action: stop_middleware | result: in_progress")
@@ -43,14 +52,10 @@ class Middleware:
             raise ChannelAlreadyConsuming()
 
         self.active_channel = True
-        self._callback = callback
+        self.callback_func = callback
         logging.info(f"action: consuming_queue | queue: {queue_consume}")
-        self.channel.basic_consume(queue=queue_consume, on_message_callback=self.callback)
-        self.channel.start_consuming()
-
-    def callback(self, ch, method, properties, body):
-        self._callback(body)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        self.channel.basic_consume(queue=queue_consume, 
+                                   on_message_callback=self.callback)
 
     def __no_callback(self, body):
         logging.error("No callback set")

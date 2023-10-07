@@ -1,5 +1,5 @@
 from configparser import ConfigParser
-from common.airportHandler import AirportHandler
+from common.query2Handler import Query2Handler
 import logging
 import os
 
@@ -21,6 +21,7 @@ def initialize_config():
     config_params = {}
     try:
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["peers"] = int(os.environ['PEERS'])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -40,7 +41,7 @@ def main():
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    airportHandler = AirportHandler()
+    airportHandler = Query2Handler(config_params['peers'])
     airportHandler.run()
 
 

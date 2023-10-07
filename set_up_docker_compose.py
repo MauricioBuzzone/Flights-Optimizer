@@ -67,7 +67,7 @@ def create_query1Handler(i):
             'PEERS='+str(AMOUNT_OF_QUERY1_HANDLER),
         ],
         'volumes': [
-            './query1Handler/config.ini:/config.ini',
+            './query1/config.ini:/config.ini',
         ],
         'depends_on': [
             'resultHandler',
@@ -80,15 +80,16 @@ def create_query1Handler(i):
 
 def create_airportHandler(i):
     return {
-        'container_name': f'airportHandler{i}',
-        'image': 'airport_handler:latest',
+        'container_name': f'query2Handler{i}',
+        'image': 'query2_handler:latest',
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
             'LOGGING_LEVEL=INFO',
+            'PEERS='+str(AMOUNT_OF_AIRPORT_HANDLER),
         ],
         'volumes': [
-            './airportHandler/config.ini:/config.ini',
+            './query2/config.ini:/config.ini',
         ],
         'depends_on': [
             'resultHandler',

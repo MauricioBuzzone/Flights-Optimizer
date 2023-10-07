@@ -20,5 +20,11 @@ class ClientHandlerMiddleware(Middleware):
     def send_flightsQ1(self, bytes):
         self.send_msg(routing_key='Q1-flights', data=bytes, exchange='')
 
+    def send_eof(self, bytes):
+        self.send_msg(routing_key='Q1-flights', data=bytes, exchange='')
+        self.send_msg(routing_key='Q2-flights', data=bytes, exchange='')
+        self.send_msg(routing_key='Q4-flights', data=bytes, exchange='')
+
+
     def send_flightsQ2(self, bytes):
         self.send_msg(routing_key='Q2-flights', data=bytes, exchange='')

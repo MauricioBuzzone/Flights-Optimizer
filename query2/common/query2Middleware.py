@@ -1,7 +1,8 @@
 import logging
+
 from middleware.middleware import Middleware
 
-class AirportHandlerMiddleware(Middleware):
+class Query2Middleware(Middleware):
     def __init__(self):
         super().__init__()
  
@@ -19,29 +20,16 @@ class AirportHandlerMiddleware(Middleware):
 
         self.channel.exchange_declare(exchange='results', exchange_type='direct')
 
-
-    def start(self):
-        self.channel.start_consuming()
-
-    def callback_airports(self, ch, method, properties, body):
-        self._callback_airports(body)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
     def listen_airports(self, callback):
-        self._callback_airports = callback
-        self.channel.basic_consume(queue=self.airport_queue_name, on_message_callback=self.callback_airports)
+        self.consuming_queue(callback, self.airport_queue_name)
         self.channel.queue_bind(exchange='airports', queue=self.airport_queue_name)
 
     def stop_listen_airports(self):
+        self.active_channel = False
         self.channel.queue_unbind(exchange='airports', queue=self.airport_queue_name)
 
-    def callback_flights(self, ch, method, properties, body):
-        self._callback_flights(body)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
     def listen_flights(self, callback):
-        self._callback_flights = callback
-        self.channel.basic_consume(queue=self.flights_queue_name, on_message_callback=self.callback_flights)
+        self.consuming_queue(callback, self.flights_queue_name)
 
     def stop_listen_flights(self):
         # stop consuming from 'Q2-flights' queue
@@ -53,6 +41,9 @@ class AirportHandlerMiddleware(Middleware):
     def receive_flights(self, callback):
         self.channel.basic_qos(prefetch_count=1)
         self.consuming_queue(callback, self.flights_queue_name)
+
+    def resend_eof(self,eof):
+        self.send_msg(routing_key='Q2-flights', data=eof, exchange='')
 
     def publish_results(self, results):
         self.send_msg(routing_key='Q2', data=results, exchange='results')
