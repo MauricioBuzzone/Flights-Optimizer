@@ -25,7 +25,8 @@ def initialize_config():
         config_params["ip"] = os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"])
         config_params["airport_path"] = os.getenv('AIRPORT_PATH', config["DEFAULT"]["AIRPORT_PATH"])
         config_params["flight_path"] = os.getenv('FLIGHT_PATH', config["DEFAULT"]["FLIGHT_PATH"])
-        config_params["chunk_size"] = int(os.getenv('CHUNK_SIZE', config["DEFAULT"]["CHUNK_SIZE"]))
+        config_params["chunk_size_airport"] = int(os.getenv('CHUNK_SIZE_AIRPORT', config["DEFAULT"]["CHUNK_SIZE_AIRPORT"]))
+        config_params["chunk_size_flight"] = int(os.getenv('CHUNK_SIZE_FLIGHT', config["DEFAULT"]["CHUNK_SIZE_FLIGHT"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
@@ -40,7 +41,8 @@ def main():
     logging_level = config_params["logging_level"]
     port = config_params["port"]
     ip = config_params["ip"]
-    chunk_size = config_params["chunk_size"]
+    chunk_size_airport = config_params["chunk_size_airport"]
+    chunk_size_flight = config_params["chunk_size_flight"]
     airport_path = config_params["airport_path"]
     flight_path = config_params["flight_path"]
 
@@ -51,7 +53,8 @@ def main():
     logging.debug(f'''action: config | result: success 
                   | port: {port} 
                   |  ip: {ip} 
-                  | chunk_size: {chunk_size} 
+                  | chunk_size_airport: {chunk_size_airport} 
+                  | chunk_size_flight: {chunk_size_flight} 
                   | airport_path: {airport_path}
                   | flight_path: {flight_path} 
                   | logging_level: {logging_level}''')

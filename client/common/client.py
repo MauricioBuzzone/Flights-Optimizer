@@ -51,6 +51,7 @@ class Client:
         self.send_file(self.flight_path,
                        ',',
                        parser_flight,
+                       self.config["chunk_size_flight"],
                        self.protocolHandler.send_flight,
                        self.protocolHandler.send_flight_eof
                        )
@@ -59,25 +60,32 @@ class Client:
         self.send_file(self.airport_path,
                        ';',
                        parser_airport,
+                       self.config["chunk_size_airport"],
                        self.protocolHandler.send_airport,
                        self.protocolHandler.send_airport_eof
                        )
 
-    def send_file(self, path, delimiter, parser, send_message, send_eof):
+    def send_file(self, path, delimiter, parser, chunk_size, send_message, send_eof):
         logging.info(f'action: send file | result: in_progress | path: {path}')
         try:
+            i = 0
             with open(path, mode ='r') as file:
                 csvFile = csv.reader(file,delimiter=delimiter)
                 next(csvFile, None)  # skip the headers
                 batch = []
                 for line in csvFile:
                     element = parser(line)
+                    
                     batch.append(element)
-                    if len(batch) == self.config["chunk_size"]: 
+                    if len(batch) == chunk_size: 
+                        logging.info(f'lines sended: {100*i/1127583}%')
+                        i += chunk_size                    
                         send_message(batch)
                         batch = []
 
                 if batch:
+                    logging.info(f'lines sended: {100*i/1127583}%')
+                    i += len(batch)   
                     send_message(batch)
                 send_eof()
         except (SocketBroken,OSError) as e:
@@ -93,10 +101,15 @@ def parser_airport(line):
 
 def parser_flight(line):
     hours, minutes = get_duration(line[DURATION])
+    
+    total_distance = 0
+    if line[DISTANCE] != '':
+        total_distance=int(line[DISTANCE])
+
     return Flight(id= line[LEG_ID],
                   origin=line[STARTING_AIRPORT],
                   destiny=line[DESTINATION_AIRPORT],
-                  total_distance=int(line[DISTANCE]), 
+                  total_distance=total_distance, 
                   total_fare=float(line[TOTAL_FARE]),
                   legs=get_legs(line), 
                   flight_duration= Duration(hours,minutes))
@@ -105,10 +118,21 @@ def get_legs(line):
     return line[SEGMENTS_DEPARTURE_COD].split('||')[1:]
 
 def get_duration(s):
-    match = re.match(r'PT(\d+)H(\d+)M', s)
+    match = re.match(r'P(?:([0-9]+)D)?(?:T(?:([0-9]+)H)?(?:([0-9]+)M)?)?', s)
+    
     if match:
-        horas = int(match.group(1))
-        minutos = int(match.group(2))
+        dias = int(match.group(1)) if match.group(1) else 0
+        horas = int(match.group(2)) if match.group(2) else 0
+        minutos = int(match.group(3)) if match.group(3) else 0
+    
+        return horas + dias*24, minutos
+    else:
+        return None
+    
+    ## Revisar si agregamos el dia a Duration
+    if match:
+        horas = int(match.group(1)) if match.group(1) else 0
+        minutos = int(match.group(2)) if match.group(2) else 0
         return horas, minutos
     else:
         return None

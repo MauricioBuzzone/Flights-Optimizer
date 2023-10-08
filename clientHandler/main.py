@@ -23,6 +23,13 @@ def initialize_config():
     try:
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["ip"] = os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"])
+
+        config_params["chunk_size_airport"] = int(os.getenv('CHUNK_SIZE_AIRPORT', config["DEFAULT"]["CHUNK_SIZE_AIRPORT"]))
+        config_params["chunk_size_q1"] = int(os.getenv('CHUNK_SIZE_Q1', config["DEFAULT"]["CHUNK_SIZE_Q1"]))
+        config_params["chunk_size_q2"] = int(os.getenv('CHUNK_SIZE_Q2', config["DEFAULT"]["CHUNK_SIZE_Q2"]))
+        config_params["chunk_size_q4"] = int(os.getenv('CHUNK_SIZE_Q4', config["DEFAULT"]["CHUNK_SIZE_Q4"]))
+
+
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
@@ -46,7 +53,7 @@ def main():
                   f"logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    clientHandler = ClientHandler(port)
+    clientHandler = ClientHandler(config_params)
     clientHandler.run()
 
 

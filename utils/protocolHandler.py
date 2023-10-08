@@ -1,4 +1,6 @@
 import struct
+import logging
+
 from utils.TCPHandler import TCPHandler
 from utils.protocol import TlvTypes, UnexpectedType, SIZE_LENGTH 
 from utils.airportSerializer import AirportSerializer

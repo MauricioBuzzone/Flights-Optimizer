@@ -25,6 +25,7 @@ def create_client():
         'volumes': [
             './client/config.ini:/config.ini',
             './client/airports-codepublic.csv:/airports-codepublic.csv',
+            './client/itineraries_random_2M.csv:/itineraries_random_2M.csv'
         ],
         'depends_on': [
             'clientHandler',
@@ -32,7 +33,6 @@ def create_client():
         'networks': [
             'middleware_testing_net',
         ],
-        'restart': 'on-failure',
     }
 
 def create_clientHandler():
@@ -54,7 +54,6 @@ def create_clientHandler():
         'networks': [
             'middleware_testing_net',
         ],
-        'restart': 'on-failure',
     }
 
 def create_query1Handler(i):
@@ -76,7 +75,6 @@ def create_query1Handler(i):
         'networks': [
             'middleware_testing_net',
         ],
-        'restart': 'on-failure',
     }
 
 def create_airportHandler(i):
@@ -98,7 +96,6 @@ def create_airportHandler(i):
         'networks': [
             'middleware_testing_net',
         ],
-        'restart': 'on-failure',
     }
 
 def create_query4Handler():
@@ -117,7 +114,6 @@ def create_query4Handler():
         'networks': [
             'middleware_testing_net',
         ],
-        'restart': 'on-failure',
     }
 
 def create_query4Worker(i):
@@ -139,7 +135,6 @@ def create_query4Worker(i):
         'networks': [
             'middleware_testing_net',
         ],
-        'restart': 'on-failure',
     }
 
 def create_query4Synchronizer():
@@ -160,7 +155,6 @@ def create_query4Synchronizer():
         'networks': [
             'middleware_testing_net',
         ],
-        'restart': 'on-failure',
     }
 
 def create_resultHandler():
@@ -178,7 +172,6 @@ def create_resultHandler():
         'networks': [
             'middleware_testing_net',
         ],
-        'restart': 'on-failure',
     }
 
 def create_file():

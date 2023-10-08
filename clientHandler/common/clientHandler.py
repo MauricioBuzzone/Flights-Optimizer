@@ -14,10 +14,11 @@ from utils.protocolHandler import ProtocolHandler
 from common.clientHandlerMiddleware import ClientHandlerMiddleware
 
 class ClientHandler:
-    def __init__(self, port):
+    def __init__(self, config_params):
         # Initialize server socket
+        self.config_params = config_params
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._server_socket.bind(('', port))
+        self._server_socket.bind(('', config_params['port']))
         self._server_socket.listen(1)
         self._server_on = True
         signal.signal(signal.SIGTERM, self.__handle_signal)
