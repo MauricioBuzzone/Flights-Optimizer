@@ -1,7 +1,5 @@
 FROM python-base:latest
 
-RUN pip3 install geopy
-
-COPY query2 /
+COPY query1/query1Handler /
 
 ENTRYPOINT ["/bin/sh"]

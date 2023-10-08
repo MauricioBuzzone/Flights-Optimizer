@@ -2,11 +2,13 @@ docker-image:
 	docker build -f ./base-images/python-base.dockerfile -t "python-base:latest" .
 	docker build -f ./client/Dockerfile -t "client:latest" .
 	docker build -f ./clientHandler/Dockerfile -t "client_handler:latest" .
-	docker build -f ./query1/Dockerfile -t "query1_handler:latest" .
-	docker build -f ./query2/Dockerfile -t "query2_handler:latest" .
+
+	docker build -f ./query1/query1Handler/Dockerfile -t "query1_handler:latest" .
+	docker build -f ./query2/query2Handler/Dockerfile -t "query2_handler:latest" .
 	docker build -f ./query4/query4Handler/Dockerfile -t "query4_handler:latest" .
 	docker build -f ./query4/query4Worker/Dockerfile -t "query4_worker:latest" .
 	docker build -f ./query4/query4Synchronizer/Dockerfile -t "query4_synchronizer:latest" .
+	
 	docker build -f ./resultHandler/Dockerfile -t "result_handler:latest" .
 .PHONY: docker-image
 

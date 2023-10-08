@@ -21,7 +21,7 @@ services:
     - middleware_testing_net
     restart: on-failure
     volumes:
-    - ./query2/config.ini:/config.ini
+    - ./query2/query2Handler/config.ini:/config.ini
   airportHandler2:
     container_name: query2Handler2
     depends_on:
@@ -36,7 +36,7 @@ services:
     - middleware_testing_net
     restart: on-failure
     volumes:
-    - ./query2/config.ini:/config.ini
+    - ./query2/query2Handler/config.ini:/config.ini
   client:
     container_name: client
     depends_on:
@@ -84,7 +84,7 @@ services:
     - middleware_testing_net
     restart: on-failure
     volumes:
-    - ./query1/config.ini:/config.ini
+    - ./query1/query1Handler/config.ini:/config.ini
   query1Handler2:
     container_name: query1Handler2
     depends_on:
@@ -99,7 +99,7 @@ services:
     - middleware_testing_net
     restart: on-failure
     volumes:
-    - ./query1/config.ini:/config.ini
+    - ./query1/query1Handler/config.ini:/config.ini
   query4Handler:
     container_name: query4Handler
     depends_on:

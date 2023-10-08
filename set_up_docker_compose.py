@@ -68,7 +68,7 @@ def create_query1Handler(i):
             'PEERS='+str(AMOUNT_OF_QUERY1_HANDLER),
         ],
         'volumes': [
-            './query1/config.ini:/config.ini',
+            './query1/query1Handler/config.ini:/config.ini',
         ],
         'depends_on': [
             'resultHandler',
@@ -90,7 +90,7 @@ def create_airportHandler(i):
             'PEERS='+str(AMOUNT_OF_AIRPORT_HANDLER),
         ],
         'volumes': [
-            './query2/config.ini:/config.ini',
+            './query2/query2Handler/config.ini:/config.ini',
         ],
         'depends_on': [
             'resultHandler',
