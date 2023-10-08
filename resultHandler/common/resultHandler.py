@@ -4,6 +4,7 @@ import logging
 import signal
 from utils.flightQ1Serializer import FlightQ1Serializer
 from utils.flightQ2Serializer import FlightQ2Serializer
+from utils.resultQ4Serializer import ResultQ4Serializer
 from utils.protocol import is_flight_eof
 
 from common.resultHandlerMiddleware import ResultHandlerMiddleware
@@ -12,6 +13,7 @@ class ResultHandler():
     def __init__(self):
         self.flightQ1Serializer = FlightQ1Serializer()
         self.flightQ2Serializer = FlightQ2Serializer()
+        self.resultQ4Serializer = ResultQ4Serializer()
         signal.signal(signal.SIGTERM, self.__handle_signal)
 
         # last thing to do:
@@ -37,7 +39,7 @@ class ResultHandler():
         elif results_type == 'Q3':
             results = [] # self.flightQ3Serializer.from_chunk(reader)
         elif results_type == 'Q4':
-            results = [] # self.??? el resultado no es un vuelo, sino una agregación...
+            results = self.resultQ4Serializer.from_chunk(reader)
         else:
             # unknown
             return
@@ -54,6 +56,9 @@ class ResultHandler():
                     writer.writerow(['Q1', result.id, result.origin, result.destiny, result.total_fare, legs])
                 elif results_type == 'Q2':
                     writer.writerow(['Q2', result.id, result.origin, result.destiny, result.total_distance])
+                elif results_type == 'Q4':
+                    journey = '-'.join([result.origin, result.destiny])
+                    writer.writerow(['Q4', journey, result.fare_avg, result.fare_max])
                 else: 
                     continue
 

@@ -8,6 +8,7 @@ from utils.airportSerializer import AirportSerializer
 from utils.flightSerializer import FlightSerializer
 from utils.flightQ1Serializer import FlightQ1Serializer
 from utils.flightQ2Serializer import FlightQ2Serializer
+from utils.flightQ4Serializer import FlightQ4Serializer
 from utils.protocolHandler import ProtocolHandler
 
 from common.clientHandlerMiddleware import ClientHandlerMiddleware
@@ -25,6 +26,7 @@ class ClientHandler:
         self.flight_serializer = FlightSerializer()
         self.flight_q1_serializer = FlightQ1Serializer()
         self.flight_q2_serializer = FlightQ2Serializer()
+        self.flight_q4_serializer = FlightQ4Serializer()
         self.middleware = ClientHandlerMiddleware()
 
     def run(self):
@@ -116,6 +118,8 @@ class ClientHandler:
         # Q3:
 
         # Q4:
+        data = self.flight_q4_serializer.to_bytes(flights)
+        self.middleware.send_flightsQ4(data)
 
         return True
 

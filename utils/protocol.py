@@ -27,7 +27,16 @@ class TlvTypes():
     FLIGHT_DURATION_HOURS = 16
     FLIGHT_DURATION_MINUTES = 17
 
-    ACK = 18
+    RESULT_Q4_EOF = 18
+    RESULT_Q4_CHUNK = 19
+    RESULT_Q4 = 20
+    RESULT_Q4_ORIGIN = 21
+    RESULT_Q4_DESTINY = 22
+    RESULT_Q4_FARE_AVG = 23
+    RESULT_Q4_FARE_MAX = 24
+    RESULT_Q4_N = 25
+
+    ACK = 26
 
 def is_airport_eof(bytes):
     if len(bytes) == TlvTypes.SIZE_CODE_MSG:
@@ -41,18 +50,28 @@ def is_flight_eof(bytes):
         return data == TlvTypes.FLIGHT_EOF
     return False
 
+def is_resultQ4_eof(bytes):
+    if len(bytes) == TlvTypes.SIZE_CODE_MSG + SIZE_LENGTH:
+        data, n = struct.unpack("!ii", bytes)
+        return data == TlvTypes.RESULT_Q4_EOF
+    return False
+
 def get_closed_peers(bytes):
     if len(bytes) == TlvTypes.SIZE_CODE_MSG + SIZE_LENGTH:
-        data, n = struct.unpack("!ii",bytes)
+        data, n = struct.unpack("!ii", bytes)
         return n
     return -1
-
 
 def make_airport_eof():
     return code_to_bytes(TlvTypes.AIRPORT_EOF)
 
 def make_flight_eof(i):
     bytes = code_to_bytes(TlvTypes.FLIGHT_EOF)
+    bytes += int.to_bytes(i,SIZE_LENGTH, 'big')
+    return bytes
+
+def make_resultQ4_eof(i):
+    bytes = code_to_bytes(TlvTypes.RESULT_Q4_EOF)
     bytes += int.to_bytes(i,SIZE_LENGTH, 'big')
     return bytes
 

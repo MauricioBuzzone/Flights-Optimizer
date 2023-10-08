@@ -25,10 +25,8 @@ class Query1Handler():
         self.middleware.stop()
 
     def recv_flights(self, flights_raw):
-
         if is_flight_eof(flights_raw):
            return self.recv_eof(flights_raw)
-           
 
         reader = io.BytesIO(flights_raw)
         flights = self.flightSerializer.from_chunk(reader)

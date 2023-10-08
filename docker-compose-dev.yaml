@@ -59,6 +59,7 @@ services:
     - airportHandler2
     - query1Handler1
     - query1Handler2
+    - query4Handler
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
@@ -99,6 +100,97 @@ services:
     restart: on-failure
     volumes:
     - ./query1/config.ini:/config.ini
+  query4Handler:
+    container_name: query4Handler
+    depends_on:
+    - query4Worker1
+    - query4Worker2
+    - query4Worker3
+    - query4Worker4
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: query4_handler:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query4/query4Handler/config.ini:/config.ini
+  query4Synchronizer:
+    container_name: query4Synchronizer
+    depends_on:
+    - resultHandler
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: query4_synchronizer:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query4/query4Synchronizer/config.ini:/config.ini
+  query4Worker1:
+    container_name: query4Worker1
+    depends_on:
+    - query4Synchronizer
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=4
+    image: query4_worker:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query4/query4Worker/config.ini:/config.ini
+  query4Worker2:
+    container_name: query4Worker2
+    depends_on:
+    - query4Synchronizer
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=4
+    image: query4_worker:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query4/query4Worker/config.ini:/config.ini
+  query4Worker3:
+    container_name: query4Worker3
+    depends_on:
+    - query4Synchronizer
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=4
+    image: query4_worker:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query4/query4Worker/config.ini:/config.ini
+  query4Worker4:
+    container_name: query4Worker4
+    depends_on:
+    - query4Synchronizer
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=4
+    image: query4_worker:latest
+    networks:
+    - middleware_testing_net
+    restart: on-failure
+    volumes:
+    - ./query4/query4Worker/config.ini:/config.ini
   resultHandler:
     container_name: resultHandler
     entrypoint: python3 /main.py
