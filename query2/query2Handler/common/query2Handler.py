@@ -70,11 +70,11 @@ class Query2Handler():
                 logging.info(f'action: Q2 filter | result: destiny({flight.destiny}) not in database')
                 continue
 
-            distance = geodesic(self.airports[flight.origin], self.airports[flight.destiny])
+            distance = geodesic(self.airports[flight.origin], self.airports[flight.destiny]).miles
             if flight.total_distance > 4 * distance:
                 filtered_flights.append(flight)
                 logging.info(f'action: publish_flight | value: {flight}')
-        
+
         if filtered_flights:
             data = self.flightSerializer.to_bytes(filtered_flights)
             self.middleware.publish_results(data)

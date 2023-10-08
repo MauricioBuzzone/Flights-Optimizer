@@ -77,14 +77,14 @@ class Client:
                     element = parser(line)
                     
                     batch.append(element)
-                    if len(batch) == chunk_size: 
-                        logging.info(f'lines sended: {100*i/1127583}%')
+                    if len(batch) == chunk_size:
+                        logging.info(f'lines sended: {100*i/2e6}%')
                         i += chunk_size                    
                         send_message(batch)
                         batch = []
 
                 if batch:
-                    logging.info(f'lines sended: {100*i/1127583}%')
+                    logging.info(f'lines sended: {100*i/2e6}%')
                     i += len(batch)   
                     send_message(batch)
                 send_eof()
