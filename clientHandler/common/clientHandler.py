@@ -116,8 +116,6 @@ class ClientHandler:
         data = self.flight_q2_serializer.to_bytes(flights)
         self.middleware.send_flightsQ2(data)
 
-        # Q3:
-
         # Q4:
         data = self.flight_q4_serializer.to_bytes(flights)
         self.middleware.send_flightsQ4(data)

@@ -95,6 +95,33 @@ services:
     - middleware_testing_net
     volumes:
     - ./query1/query1Handler/config.ini:/config.ini
+  query3Handler:
+    container_name: query3Handler
+    depends_on:
+    - query3Worker1
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    image: query3_handler:latest
+    networks:
+    - middleware_testing_net
+    volumes:
+    - ./query3/query3Handler/config.ini:/config.ini
+  query3Worker1:
+    container_name: query3Worker1
+    depends_on:
+    - resultHandler
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=1
+    image: query3_worker:latest
+    networks:
+    - middleware_testing_net
+    volumes:
+    - ./query3/query3Worker/config.ini:/config.ini
   query4Handler:
     container_name: query4Handler
     depends_on:

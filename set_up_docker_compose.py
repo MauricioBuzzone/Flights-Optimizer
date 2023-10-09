@@ -2,7 +2,7 @@
 import yaml
 import argparse
 
-from config import AMOUNT_OF_AIRPORT_HANDLER, AMOUNT_OF_QUERY1_HANDLER, AMOUNT_OF_QUERY4_WORKERS
+from config import AMOUNT_OF_AIRPORT_HANDLER, AMOUNT_OF_QUERY1_HANDLER, AMOUNT_OF_QUERY4_WORKERS, AMOUNT_OF_QUERY3_WORKERS
 
 def create_network():
     return {
@@ -92,6 +92,46 @@ def create_airportHandler(i):
         ],
         'depends_on': [
             'resultHandler',
+        ],
+        'networks': [
+            'middleware_testing_net',
+        ],
+    }
+
+def create_query3Handler():
+    return {
+        'container_name': 'query3Handler',
+        'image': 'query3_handler:latest',
+        'entrypoint': 'python3 /main.py',
+        'environment': [
+            'PYTHONUNBUFFERED=1',
+            'LOGGING_LEVEL=INFO',
+        ],
+        'volumes': [
+            './query3/query3Handler/config.ini:/config.ini',
+        ],
+        'depends_on': [f'query3Worker{i+1}' for i in range(AMOUNT_OF_QUERY3_WORKERS)],
+        'networks': [
+            'middleware_testing_net',
+        ],
+    }
+
+def create_query3Worker(i):
+    return {
+        'container_name': f'query3Worker{i}',
+        'image': 'query3_worker:latest',
+        'entrypoint': 'python3 /main.py',
+        'environment': [
+            'PYTHONUNBUFFERED=1',
+            'LOGGING_LEVEL=INFO',
+            'PEERS='+str(AMOUNT_OF_QUERY3_WORKERS),
+        ],
+        'volumes': [
+            './query3/query3Worker/config.ini:/config.ini',
+        ],
+        'depends_on': [
+            'resultHandler', # mentira
+            #'query4Synchronizer',
         ],
         'networks': [
             'middleware_testing_net',
@@ -190,6 +230,12 @@ def create_file():
     # query2
     for i in range(AMOUNT_OF_AIRPORT_HANDLER):
         config['services'][f'airportHandler{i+1}'] = create_airportHandler(i+1)
+
+    # query3
+    config['services']['query3Handler'] = create_query3Handler()
+    for i in range(AMOUNT_OF_QUERY3_WORKERS):
+        config['services'][f'query3Worker{i+1}'] = create_query3Worker(i+1)
+    # sync
 
     # query4
     config['services']['query4Handler'] = create_query4Handler()

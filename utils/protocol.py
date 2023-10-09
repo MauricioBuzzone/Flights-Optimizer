@@ -36,7 +36,21 @@ class TlvTypes():
     RESULT_Q4_FARE_MAX = 24
     RESULT_Q4_N = 25
 
-    ACK = 26
+    RESULT_Q3_EOF = 26
+    RESULT_Q3_CHUNK = 27
+    RESULT_Q3 = 28
+    RESULT_Q3_ORIGIN = 29
+    RESULT_Q3_DESTINY = 30
+    RESULT_Q3_ID1 = 31
+    RESULT_Q3_LEG1 = 32
+    RESULT_Q3_DURATION1_HOURS = 33
+    RESULT_Q3_DURATION1_MINUTES = 34
+    RESULT_Q3_ID2 = 35
+    RESULT_Q3_LEG2 = 36
+    RESULT_Q3_DURATION2_HOURS = 37
+    RESULT_Q3_DURATION2_MINUTES = 38
+
+    ACK = 39 # ?
 
 def is_airport_eof(bytes):
     if len(bytes) == TlvTypes.SIZE_CODE_MSG:
@@ -67,6 +81,11 @@ def make_airport_eof():
 
 def make_flight_eof(i):
     bytes = code_to_bytes(TlvTypes.FLIGHT_EOF)
+    bytes += int.to_bytes(i,SIZE_LENGTH, 'big')
+    return bytes
+
+def make_resultQ3_eof(i):
+    bytes = code_to_bytes(TlvTypes.RESULT_Q3_EOF)
     bytes += int.to_bytes(i,SIZE_LENGTH, 'big')
     return bytes
 
