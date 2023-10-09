@@ -15,7 +15,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=INFO
-    - PEERS=2
+    - PEERS=3
     image: query2_handler:latest
     networks:
     - middleware_testing_net
@@ -29,7 +29,21 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=INFO
-    - PEERS=2
+    - PEERS=3
+    image: query2_handler:latest
+    networks:
+    - middleware_testing_net
+    volumes:
+    - ./query2/query2Handler/config.ini:/config.ini
+  airportHandler3:
+    container_name: query2Handler3
+    depends_on:
+    - resultHandler
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=3
     image: query2_handler:latest
     networks:
     - middleware_testing_net
@@ -55,8 +69,8 @@ services:
     depends_on:
     - airportHandler1
     - airportHandler2
+    - airportHandler3
     - query1Handler1
-    - query1Handler2
     - query4Handler
     entrypoint: python3 /main.py
     environment:
@@ -75,21 +89,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=INFO
-    - PEERS=2
-    image: query1_handler:latest
-    networks:
-    - middleware_testing_net
-    volumes:
-    - ./query1/query1Handler/config.ini:/config.ini
-  query1Handler2:
-    container_name: query1Handler2
-    depends_on:
-    - resultHandler
-    entrypoint: python3 /main.py
-    environment:
-    - PYTHONUNBUFFERED=1
-    - LOGGING_LEVEL=INFO
-    - PEERS=2
+    - PEERS=1
     image: query1_handler:latest
     networks:
     - middleware_testing_net
@@ -101,7 +101,6 @@ services:
     - query4Worker1
     - query4Worker2
     - query4Worker3
-    - query4Worker4
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
@@ -132,7 +131,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=INFO
-    - PEERS=4
+    - PEERS=3
     image: query4_worker:latest
     networks:
     - middleware_testing_net
@@ -146,7 +145,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=INFO
-    - PEERS=4
+    - PEERS=3
     image: query4_worker:latest
     networks:
     - middleware_testing_net
@@ -160,21 +159,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=INFO
-    - PEERS=4
-    image: query4_worker:latest
-    networks:
-    - middleware_testing_net
-    volumes:
-    - ./query4/query4Worker/config.ini:/config.ini
-  query4Worker4:
-    container_name: query4Worker4
-    depends_on:
-    - query4Synchronizer
-    entrypoint: python3 /main.py
-    environment:
-    - PYTHONUNBUFFERED=1
-    - LOGGING_LEVEL=INFO
-    - PEERS=4
+    - PEERS=3
     image: query4_worker:latest
     networks:
     - middleware_testing_net

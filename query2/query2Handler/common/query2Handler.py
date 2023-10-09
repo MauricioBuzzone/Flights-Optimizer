@@ -11,11 +11,13 @@ from utils.protocol import make_flight_eof, get_closed_peers
 
 
 class Query2Handler():
-    def __init__(self, peers):
+    def __init__(self, config):
 
         self.airports = {} #cod: (lat, lon)
-        self.peers = peers
-        
+        self.config = config
+        self.peers = config['peers']
+        self.filtered_flights = []
+
         self.airportSerializer = AirportSerializer()
         self.flightSerializer = FlightQ2Serializer()
         signal.signal(signal.SIGTERM, self.__handle_signal)
@@ -61,7 +63,7 @@ class Query2Handler():
         flights = self.flightSerializer.from_chunk(reader)
         logging.info(f'action: new_chunk_flights | chunck_len: {len(flights)}')
 
-        filtered_flights = []
+        
         for flight in flights:
             if not (flight.origin in self.airports):
                 logging.info(f'action: Q2 filter | result: origin({flight.origin}) not in database')
@@ -71,17 +73,22 @@ class Query2Handler():
                 continue
 
             distance = geodesic(self.airports[flight.origin], self.airports[flight.destiny]).miles
-            if flight.total_distance > 4 * distance:
-                filtered_flights.append(flight)
+            if flight.total_distance > self.config['distance_rate'] * distance:
+                self.filtered_flights.append(flight)
                 logging.info(f'action: publish_flight | value: {flight}')
 
-        if filtered_flights:
-            data = self.flightSerializer.to_bytes(filtered_flights)
-            self.middleware.publish_results(data)
+                if len(self.filtered_flights) == self.config['chunk_size']:
+                    data = self.flightSerializer.to_bytes(self.filtered_flights)
+                    self.middleware.publish_results(data)
+                    self.filtered_flights = []
 
         return True
 
     def recv_eof(self,eof):
+        if self.filtered_flights:
+            data = self.flightSerializer.to_bytes(self.filtered_flights)
+            self.middleware.publish_results(data)
+
         closed_peers = get_closed_peers(eof)
         if closed_peers == -1:
             logging.error(f'action: close | result: fail | e = Error to parse eof')

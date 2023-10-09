@@ -21,6 +21,8 @@ def initialize_config():
     config_params = {}
     try:
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["chunk_size"] = int(os.getenv('CHUNK_SIZE', config["DEFAULT"]["CHUNK_SIZE"]))
+        config_params["distance_rate"] = float(os.getenv('DISTANCE_RATE', config["DEFAULT"]["DISTANCE_RATE"]))
         config_params["peers"] = int(os.environ['PEERS'])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
@@ -41,7 +43,7 @@ def main():
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    airportHandler = Query2Handler(config_params['peers'])
+    airportHandler = Query2Handler(config_params)
     airportHandler.run()
 
 
