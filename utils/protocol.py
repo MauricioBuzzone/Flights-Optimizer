@@ -64,6 +64,12 @@ def is_flight_eof(bytes):
         return data == TlvTypes.FLIGHT_EOF
     return False
 
+def is_resultQ3_eof(bytes):
+    if len(bytes) == TlvTypes.SIZE_CODE_MSG + SIZE_LENGTH:
+        data, n = struct.unpack("!ii", bytes)
+        return data == TlvTypes.RESULT_Q3_EOF
+    return False
+
 def is_resultQ4_eof(bytes):
     if len(bytes) == TlvTypes.SIZE_CODE_MSG + SIZE_LENGTH:
         data, n = struct.unpack("!ii", bytes)

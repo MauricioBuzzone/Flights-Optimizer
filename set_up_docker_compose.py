@@ -130,8 +130,27 @@ def create_query3Worker(i):
             './query3/query3Worker/config.ini:/config.ini',
         ],
         'depends_on': [
-            'resultHandler', # mentira
-            #'query4Synchronizer',
+            'query3Synchronizer',
+        ],
+        'networks': [
+            'middleware_testing_net',
+        ],
+    }
+
+def create_query3Synchronizer():
+    return {
+        'container_name': 'query3Synchronizer',
+        'image': 'query3_synchronizer:latest',
+        'entrypoint': 'python3 /main.py',
+        'environment': [
+            'PYTHONUNBUFFERED=1',
+            'LOGGING_LEVEL=INFO',
+        ],
+        'volumes': [
+            './query3/query3Synchronizer/config.ini:/config.ini',
+        ],
+        'depends_on': [
+            'resultHandler',
         ],
         'networks': [
             'middleware_testing_net',
@@ -235,7 +254,7 @@ def create_file():
     config['services']['query3Handler'] = create_query3Handler()
     for i in range(AMOUNT_OF_QUERY3_WORKERS):
         config['services'][f'query3Worker{i+1}'] = create_query3Worker(i+1)
-    # sync
+    config['services']['query3Synchronizer'] = create_query3Synchronizer()
 
     # query4
     config['services']['query4Handler'] = create_query4Handler()

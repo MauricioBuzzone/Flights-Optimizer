@@ -9,6 +9,7 @@ docker-image:
 
 	docker build -f ./query3/query3Handler/Dockerfile -t "query3_handler:latest" .
 	docker build -f ./query3/query3Worker/Dockerfile -t "query3_worker:latest" .
+	docker build -f ./query3/query3Synchronizer/Dockerfile -t "query3_synchronizer:latest" .
 
 	docker build -f ./query4/query4Handler/Dockerfile -t "query4_handler:latest" .
 	docker build -f ./query4/query4Worker/Dockerfile -t "query4_worker:latest" .

@@ -23,7 +23,6 @@ class ResultQ3:
         elif not self.second_fastest_flight or new_flight.is_fastest_than(self.second_fastest_flight):
             self.second_fastest_flight = new_flight
 
-
     def merge(self, other):
         self.update(other.fastest_flight)
         if other.second_fastest_flight:

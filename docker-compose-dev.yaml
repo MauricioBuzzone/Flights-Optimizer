@@ -99,6 +99,7 @@ services:
     container_name: query3Handler
     depends_on:
     - query3Worker1
+    - query3Worker2
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
@@ -108,15 +109,42 @@ services:
     - middleware_testing_net
     volumes:
     - ./query3/query3Handler/config.ini:/config.ini
-  query3Worker1:
-    container_name: query3Worker1
+  query3Synchronizer:
+    container_name: query3Synchronizer
     depends_on:
     - resultHandler
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=INFO
-    - PEERS=1
+    image: query3_synchronizer:latest
+    networks:
+    - middleware_testing_net
+    volumes:
+    - ./query3/query3Synchronizer/config.ini:/config.ini
+  query3Worker1:
+    container_name: query3Worker1
+    depends_on:
+    - query3Synchronizer
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=2
+    image: query3_worker:latest
+    networks:
+    - middleware_testing_net
+    volumes:
+    - ./query3/query3Worker/config.ini:/config.ini
+  query3Worker2:
+    container_name: query3Worker2
+    depends_on:
+    - query3Synchronizer
+    entrypoint: python3 /main.py
+    environment:
+    - PYTHONUNBUFFERED=1
+    - LOGGING_LEVEL=INFO
+    - PEERS=2
     image: query3_worker:latest
     networks:
     - middleware_testing_net
