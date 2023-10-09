@@ -72,7 +72,7 @@ class ResultQ3Serializer(Serializer):
 
             raw_result = b''
             raw_result += string_to_bytes(flight1.origin, TlvTypes.RESULT_Q3_ORIGIN)
-            raw_result += string_to_bytes(flight1.origin, TlvTypes.RESULT_Q3_DESTINY)
+            raw_result += string_to_bytes(flight1.destiny, TlvTypes.RESULT_Q3_DESTINY)
 
             # flight1
             raw_result += string_to_bytes(flight1.id, TlvTypes.RESULT_Q3_ID1)
