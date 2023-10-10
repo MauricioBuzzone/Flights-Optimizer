@@ -6,7 +6,7 @@ class ResultQ4:
         self.fare_max = fare_max
         self.n = n
 
-    def update_fare(self, new_fare: float):
+    def update(self, new_fare: float):
         self.fare_avg = (self.fare_avg*self.n + new_fare) / (self.n + 1)
         self.fare_max = max(self.fare_max, new_fare)
         self.n += 1
