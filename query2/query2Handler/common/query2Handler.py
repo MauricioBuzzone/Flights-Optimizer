@@ -6,8 +6,7 @@ from geopy.distance import geodesic
 from common.query2Middleware import Query2Middleware
 from utils.airportSerializer import AirportSerializer
 from utils.flightQ2Serializer import FlightQ2Serializer
-from utils.protocol import is_airport_eof, is_flight_eof
-from utils.protocol import make_flight_eof, get_closed_peers
+from utils.protocol import is_eof, make_eof, get_closed_peers
 
 
 class Query2Handler():
@@ -35,7 +34,7 @@ class Query2Handler():
         self.middleware.stop()
 
     def recv_airports(self, airports_raw):
-        if is_airport_eof(airports_raw):
+        if is_eof(airports_raw):
             logging.info(f'action: recv_airports | result: EOF')
             self.middleware.stop_listen_airports()
             logging.info(f'action: stop_receiving_airports | result: success')
@@ -56,7 +55,7 @@ class Query2Handler():
         return True
 
     def recv_flights(self, flights_raw):
-        if is_flight_eof(flights_raw):
+        if is_eof(flights_raw):
             return self.recv_eof(flights_raw)
 
         reader = io.BytesIO(flights_raw)
@@ -96,12 +95,12 @@ class Query2Handler():
         if closed_peers < self.peers - 1:
             # Send EOF to other peers.
             logging.info(f'action: recv EOF | result: in_progress | peers = {self.peers} | closed_peers: {closed_peers}')
-            new_eof = make_flight_eof(closed_peers + 1)
+            new_eof = make_eof(closed_peers + 1)
             self.middleware.resend_eof(new_eof)
         else:
             # All my peers are closed, send EOF to ResultQueue
             logging.info(f'action: recv EOF | result: in_progress | peers = {self.peers} | closed_peers: {closed_peers}')
-            last_eof = make_flight_eof(0)
+            last_eof = make_eof(0)
             self.middleware.publish_results(last_eof)
 
         return False

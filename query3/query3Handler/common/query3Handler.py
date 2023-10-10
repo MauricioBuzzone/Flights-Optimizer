@@ -1,7 +1,7 @@
 import io
 import logging
 import signal
-from utils.protocol import is_flight_eof, make_flight_eof 
+from utils.protocol import is_eof, make_eof 
 from common.query3HandlerMiddleware import Query3HandlerMiddleware
 
 class Query3Handler():
@@ -22,14 +22,14 @@ class Query3Handler():
         self.middleware.stop()
 
     def recv_flights(self, flights_raw):
-        if is_flight_eof(flights_raw):
+        if is_eof(flights_raw):
            return self.recv_eof(flights_raw)
 
         self.middleware.publish_flights(flights_raw)
         return True
 
     def recv_eof(self, eof):
-        eof = make_flight_eof(0)
+        eof = make_eof(0)
         self.middleware.send_eof_to_workers(eof)
         return False
 

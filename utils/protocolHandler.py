@@ -2,7 +2,7 @@ import struct
 import logging
 
 from utils.TCPHandler import TCPHandler
-from utils.protocol import TlvTypes, UnexpectedType, SIZE_LENGTH 
+from utils.protocol import TlvTypes, UnexpectedType, SIZE_LENGTH, is_eof, make_eof
 from utils.airportSerializer import AirportSerializer
 from utils.flightSerializer import FlightSerializer
 
@@ -11,6 +11,8 @@ class ProtocolHandler:
         self.TCPHandler = TCPHandler(socket)
         self.airport_serializer = AirportSerializer()
         self.flight_serializer = FlightSerializer()
+
+        self.eof_airports_received = False
 
     def wait_confimation(self):
         type_encode_raw = self.TCPHandler.read(TlvTypes.SIZE_CODE_MSG)
@@ -22,18 +24,17 @@ class ProtocolHandler:
         result = self.TCPHandler.send_all(bytes)
         assert result == len(bytes), f'TCP Error: cannot send ACK'
 
-    def send_eof(self, eof_type):
-        bytes = int.to_bytes(eof_type, TlvTypes.SIZE_CODE_MSG, 'big')
-        bytes += int.to_bytes(0, SIZE_LENGTH, 'big')
-        result = self.TCPHandler.send_all(bytes)
-        assert result == len(bytes), f'TCP Error: cannot send EOF'
+    def send_eof(self):
+        eof = make_eof(0)
+        result = self.TCPHandler.send_all(eof)
+        assert result == len(eof), f'TCP Error: cannot send EOF'
 
     def send_airport_eof(self):
-        self.send_eof(TlvTypes.AIRPORT_EOF)
+        self.send_eof()
         self.wait_confimation()
 
     def send_flight_eof(self):
-        self.send_eof(TlvTypes.FLIGHT_EOF)
+        self.send_eof()
         self.wait_confimation()
 
     def send_airport(self, airports):
@@ -63,11 +64,9 @@ class ProtocolHandler:
 
     def read(self):
         tlv_type, tlv_len = self.read_tl()
-        if self.is_airport_eof(tlv_type):
-            return TlvTypes.AIRPORT_EOF, None
 
-        if self.is_flight_eof(tlv_type):
-            return TlvTypes.FLIGHT_EOF, None
+        if tlv_type == TlvTypes.EOF:
+            return TlvTypes.EOF, None
 
         elif tlv_type == TlvTypes.AIRPORT_CHUNK:
             return TlvTypes.AIRPORT_CHUNK, self.airport_serializer.from_chunk(self.TCPHandler, header=False, n_chunks=tlv_len)
@@ -78,14 +77,20 @@ class ProtocolHandler:
         else:
             raise UnexpectedType()
 
-    def is_eof(self, tlv_type):
-        return tlv_type == TlvTypes.EOF
-    
-    def is_airport_eof(self, tlv_type):
-        return tlv_type == TlvTypes.AIRPORT_EOF
-    
-    def is_flight_eof(self, tlv_type):
-        return tlv_type == TlvTypes.FLIGHT_EOF
+    def is_airport_eof(self, t):
+        if self.eof_airports_received:
+            return False
+        elif t == TlvTypes.EOF:
+            self.eof_airports_received = True
+            return True
+        return False
+
+    def is_flight_eof(self, t):
+        if not self.eof_airports_received:
+            return False
+        elif t == TlvTypes.EOF:
+            return True
+        return False
 
     def is_airports(self, tlv_type):
        return tlv_type == TlvTypes.AIRPORT_CHUNK

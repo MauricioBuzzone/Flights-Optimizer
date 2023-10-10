@@ -6,7 +6,7 @@ from utils.flightQ1Serializer import FlightQ1Serializer
 from utils.flightQ2Serializer import FlightQ2Serializer
 from utils.resultQ3Serializer import ResultQ3Serializer
 from utils.resultQ4Serializer import ResultQ4Serializer
-from utils.protocol import is_flight_eof
+from utils.protocol import is_eof
 
 from common.resultHandlerMiddleware import ResultHandlerMiddleware
 
@@ -61,7 +61,7 @@ class ResultHandler():
     def deserialize_result(self, bytes_raw, type):
         reader = io.BytesIO(bytes_raw)
         results = self.serializers[type].from_chunk(reader)        
-        if is_flight_eof(bytes_raw):
+        if is_eof(bytes_raw):
             logging.info(f'action: recv EOF {type}| result: success')
         return results       
         

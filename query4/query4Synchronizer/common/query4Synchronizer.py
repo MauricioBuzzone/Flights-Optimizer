@@ -3,7 +3,7 @@ import logging
 import signal
 
 from common.query4SynchronizerMiddleware import Query4SynchronizerMiddleware
-from utils.protocol import is_resultQ4_eof, make_flight_eof
+from utils.protocol import is_eof, make_eof
 from utils.resultQ4Serializer import ResultQ4Serializer
 
 class Query4Synchronizer():
@@ -29,7 +29,7 @@ class Query4Synchronizer():
         self.middleware.stop()
 
     def recv_results(self, results_raw):
-        if is_resultQ4_eof(results_raw):
+        if is_eof(results_raw):
            return self.recv_eof(results_raw)
 
         reader = io.BytesIO(results_raw)
@@ -59,8 +59,7 @@ class Query4Synchronizer():
 
     def recv_eof(self, eof):
         self.send_results()
-        # flight eof?
-        last_eof = make_flight_eof(0)
+        last_eof = make_eof(0)
         self.middleware.publish_results(last_eof)
         return False
 

@@ -2,7 +2,7 @@ import io
 import logging
 import signal
 
-from utils.protocol import is_flight_eof, make_resultQ4_eof
+from utils.protocol import is_eof, make_eof
 from model.flight import Flight
 from model.duration import Duration
 from utils.flightQ4Serializer import FlightQ4Serializer
@@ -32,7 +32,7 @@ class Query4Handler():
         self.middleware.stop()
 
     def recv_flights(self, flights_raw):
-        if is_flight_eof(flights_raw):
+        if is_eof(flights_raw):
            return self.recv_eof(flights_raw)
 
         reader = io.BytesIO(flights_raw)
@@ -67,6 +67,7 @@ class Query4Handler():
             data = self.flightSerializer.to_bytes(chunk)
             self.middleware.publish_flights(data)
 
+        eof = make_eof(0)
         self.middleware.send_eof_to_workers(eof)
 
         return False

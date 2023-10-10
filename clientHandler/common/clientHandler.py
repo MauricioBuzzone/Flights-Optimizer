@@ -3,7 +3,7 @@ import signal
 import logging
 
 from utils.TCPHandler import SocketBroken
-from utils.protocol import make_airport_eof, make_flight_eof
+from utils.protocol import make_eof
 from utils.airportSerializer import AirportSerializer
 from utils.flightSerializer import FlightSerializer
 from utils.flightQ1Serializer import FlightQ1Serializer
@@ -63,14 +63,11 @@ class ClientHandler:
 
                 if protocolHandler.is_airport_eof(t):
                     keep_reading = self.__handle_airport_eof()
-
-                if protocolHandler.is_flight_eof(t):
+                elif protocolHandler.is_flight_eof(t):
                     keep_reading = self.__handle_flight_eof()
-
-                if protocolHandler.is_airports(t):
+                elif protocolHandler.is_airports(t):
                     keep_reading = self.__handle_airports(value)
-
-                if protocolHandler.is_flights(t):
+                elif protocolHandler.is_flights(t):
                     keep_reading = self.__handle_flights(value)
 
                 protocolHandler.ack()
@@ -84,7 +81,7 @@ class ClientHandler:
                 logging.info(f'action: finishing | result: success')
     
     def __handle_airport_eof(self):
-        eof = make_airport_eof()
+        eof = make_eof()
         self.middleware.send_airport(eof)
 
         logging.info(f'action: send_airports | value: EOF | result: success')
@@ -99,7 +96,7 @@ class ClientHandler:
 
     def __handle_flight_eof(self):
         logging.info(f'action: read flight_eof | result: success')
-        eof = make_flight_eof(0)
+        eof = make_eof(0)
         self.middleware.send_eof(eof)
         return False
         
