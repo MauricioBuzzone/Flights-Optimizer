@@ -1,17 +1,18 @@
 import logging
 from middleware.middleware import Middleware
 
-class QueryWorkerMiddleware(Middleware):
+class MiddlewareQQ(Middleware):
     def __init__(self, in_queue_name: str, out_queue_name: str):
         super().__init__()
+
         # Declare IN-queue
         self.in_queue_name = in_queue_name
-        self.channel.queue_declare(queue=self.in_queue_name, durable=True)
+        self.channel.queue_declare(queue=in_queue_name, durable=True)
         logging.info(f'action: declare_in_queue | queue_name: {in_queue_name}')
 
         # Declare OUT-queue
         self.out_queue_name = out_queue_name
-        self.channel.queue_declare(queue=self.out_queue_name, durable=True)
+        self.channel.queue_declare(queue=out_queue_name, durable=True)
         logging.info(f'action: declare_out_queue | queue_name: {out_queue_name}')
 
     def listen(self, callback):

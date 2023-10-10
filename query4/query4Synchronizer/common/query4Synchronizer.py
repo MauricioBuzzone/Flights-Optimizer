@@ -1,13 +1,19 @@
-from utils.querySynchronizer.querySynchronizer import QuerySynchronizer
+from utils.worker import Worker
+from middleware.middlewareQE import MiddlewareQE
 from utils.resultQ4Serializer import ResultQ4Serializer
 
-class Query4Synchronizer(QuerySynchronizer):
+class Query4Synchronizer(Worker):
     def __init__(self, chunk_size):
-        in_queue_name = 'Q4-sync'
         in_serializer = ResultQ4Serializer()
-        tag_out = 'Q4'
         out_serializer = ResultQ4Serializer()
-        super().__init__(chunk_size, in_queue_name, in_serializer, tag_out, out_serializer)
+        middleware = MiddlewareQE(in_queue_name='Q4-sync',
+                                  exchange='results',
+                                  tag='Q4')
+        super().__init__(middleware=middleware,
+                         in_serializer=in_serializer,
+                         out_serializer=out_serializer,
+                         peers=1,
+                         chunk_size=chunk_size)
 
     def work(self, input):
         result = input

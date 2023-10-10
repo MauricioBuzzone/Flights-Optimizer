@@ -1,15 +1,20 @@
-from utils.queryWorker.queryWorker import QueryWorker
+from utils.worker import Worker
+from middleware.middlewareQQ import MiddlewareQQ
 from utils.flightQ1Serializer import FlightQ1Serializer
 from utils.resultQ3Serializer import ResultQ3Serializer
 from utils.resultQ3 import ResultQ3
 
-class Query3Worker(QueryWorker):
+class Query3Worker(Worker):
     def __init__(self, peers, chunk_size):
-        in_queue_name = 'Q3-workers'
         in_serializer = FlightQ1Serializer()
-        out_queue_name = 'Q3-sync'
         out_serializer = ResultQ3Serializer()
-        super().__init__(peers, chunk_size, in_queue_name, in_serializer, out_queue_name, out_serializer)
+        middleware = MiddlewareQQ(in_queue_name='Q3-workers',
+                                  out_queue_name='Q3-sync')
+        super().__init__(middleware=middleware,
+                         in_serializer=in_serializer,
+                         out_serializer=out_serializer,
+                         peers=peers,
+                         chunk_size=chunk_size)
 
     def work(self, input):
         flight = input

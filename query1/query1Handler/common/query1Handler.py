@@ -1,69 +1,23 @@
-import io
 import logging
-import signal
 
-from common.query1Middleware import Query1Middleware
+from utils.worker import Worker
+from middleware.middlewareQE import MiddlewareQE
 from utils.flightQ1Serializer import FlightQ1Serializer
-from utils.protocol import is_eof, make_eof, get_closed_peers
 
-class Query1Handler():
+class Query1Handler(Worker):
     def __init__(self, peers):
-        signal.signal(signal.SIGTERM, self.__handle_signal)
-        self.peers = peers
-        self.flightSerializer = FlightQ1Serializer()
+        middleware = MiddlewareQE(in_queue_name='Q1-flights',
+                                  exchange='results',
+                                  tag='Q1')
+        super().__init__(middleware=middleware,
+                         in_serializer=FlightQ1Serializer(),
+                         out_serializer=FlightQ1Serializer(),
+                         peers=peers,
+                         chunk_size=1,)
 
-        # last thing to do:
-        self.middleware = Query1Middleware()
-
-    def run(self):
-        logging.info(f'action: listen_flights | result: in_progress')
-        self.middleware.listen_flights(self.recv_flights)
-        logging.info(f'action: listen_flights | result: success')
-
-        self.middleware.start()
-        logging.info(f"ESTOY POR CERRAR")
-        self.middleware.stop()
-
-    def recv_flights(self, flights_raw):
-        if is_eof(flights_raw):
-           return self.recv_eof(flights_raw)
-
-        reader = io.BytesIO(flights_raw)
-        flights = self.flightSerializer.from_chunk(reader)
-        logging.info(f'action: new_chunk_flights | chunck_len: {len(flights)}')
-
-        filtered_flights = []
-        for flight in flights:
-            if len(flight.legs) >= 3:
-                filtered_flights.append(flight)
-                logging.info(f'action: publish_flight | value: {flight}')
-
-        if filtered_flights:
-            data = self.flightSerializer.to_bytes(filtered_flights)
-            self.middleware.publish_results(data)
-
-        return True
-
-    def recv_eof(self,eof):
-        closed_peers = get_closed_peers(eof)
-        if closed_peers == -1:
-            logging.error(f'action: close | result: fail | e = Error to parse eof')
-
-        if closed_peers < self.peers - 1:
-            # Send EOF to other peers.
-            logging.info(f'action: recv EOF | result: in_progress | peers = {self.peers} | closed_peers: {closed_peers}')
-            new_eof = make_eof(closed_peers + 1)
-            self.middleware.resend_eof(new_eof)
-        else:
-            # All my peers are closed, send EOF to ResultQueue
-            logging.info(f'action: recv EOF | result: in_progress | peers = {self.peers} | closed_peers: {closed_peers}')
-            last_eof = make_eof(0)
-            self.middleware.publish_results(last_eof)
-
-        return False
-
-
-    def __handle_signal(self, signum, frame):
-        logging.info(f'action: stop_handler | result: in_progress | singal {signum}')
-        self.middleware.stop()
-        logging.info(f'action: stop_handler | result: success')
+    def work(self, input):
+        flight = input
+        if len(flight.legs) >= 3:
+            logging.info(f'action: publish_flight | value: {flight}')
+            data = self.out_serializer.to_bytes([flight])
+            self.middleware.publish(data)
