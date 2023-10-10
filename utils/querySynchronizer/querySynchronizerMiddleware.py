@@ -1,20 +1,21 @@
 import logging
 from middleware.middleware import Middleware
 
-class Query3SynchronizerMiddleware(Middleware):
-    def __init__(self):
+class QuerySynchronizerMiddleware(Middleware):
+    def __init__(self, in_queue_name: str, routing_key: str):
         super().__init__()
 
-        # Declare Q3-sync queue
-        self.sync_queue_name = 'Q3-sync'
+        # Declare IN-queue
+        self.sync_queue_name = in_queue_name
         self.channel.queue_declare(queue=self.sync_queue_name, durable=True)
         logging.info(f'action: declare_sync_queue | queue: {self.sync_queue_name}')
 
         # Declare results exchange
+        self.routing_key = routing_key
         self.channel.exchange_declare(exchange='results', exchange_type='direct')
 
-    def listen_results(self, callback):
+    def listen(self, callback):
         self.consuming_queue(callback, self.sync_queue_name)
 
-    def publish_results(self, results):
-        self.send_msg(routing_key='Q3', data=results, exchange='results')
+    def publish(self, results):
+        self.send_msg(routing_key=self.routing_key, data=results, exchange='results')
