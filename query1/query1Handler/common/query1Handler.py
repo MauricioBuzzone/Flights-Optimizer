@@ -1,5 +1,4 @@
 import logging
-
 from utils.worker import Worker
 from middleware.middlewareQE import MiddlewareQE
 from utils.flightQ1Serializer import FlightQ1Serializer

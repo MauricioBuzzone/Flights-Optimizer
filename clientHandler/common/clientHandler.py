@@ -135,7 +135,7 @@ class ClientHandler:
             else:
                 logging.info(f'action: stop_accept_connections | result: success')
             return
-        
+
     def __handle_signal(self, signum, frame):
         """
         Close server socket graceful

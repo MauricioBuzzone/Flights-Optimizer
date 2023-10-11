@@ -1,7 +1,9 @@
-from configparser import ConfigParser
-from common.query2Handler import Query2Handler
-import logging
 import os
+import logging
+from configparser import ConfigParser
+
+from common.airportHandler import AirportHandler
+from common.query2Handler import Query2Handler
 
 def initialize_config():
     """ Parse env variables or config file to find program config params
@@ -31,10 +33,12 @@ def initialize_config():
 
     return config_params
 
-
 def main():
     config_params = initialize_config()
     logging_level = config_params["logging_level"]
+    peers = config_params["peers"]
+    chunk_size = config_params["chunk_size"]
+    distance_rate = config_params["distance_rate"]
 
     initialize_log(logging_level)
 
@@ -43,9 +47,12 @@ def main():
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    airportHandler = Query2Handler(config_params)
+    airports = {}
+    airportHandler = AirportHandler(airports)
     airportHandler.run()
 
+    flightHandler = Query2Handler(airports, peers, chunk_size, distance_rate)
+    flightHandler.run()
 
 def initialize_log(logging_level):
     """

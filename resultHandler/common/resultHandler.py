@@ -13,11 +13,10 @@ from common.resultHandlerMiddleware import ResultHandlerMiddleware
 class ResultHandler():
     def __init__(self):
         signal.signal(signal.SIGTERM, self.__handle_signal)
-        self.serializers = { 'Q1': FlightQ1Serializer(),
+        self.serializers = {'Q1': FlightQ1Serializer(),
                             'Q2': FlightQ2Serializer(),
                             'Q3': ResultQ3Serializer(),
-                            'Q4': ResultQ4Serializer(),
-                           }
+                            'Q4': ResultQ4Serializer(),}
         
         # last thing to do:
         self.middleware = ResultHandlerMiddleware()
