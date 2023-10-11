@@ -4,7 +4,7 @@ from middleware.middlewareQQ import MiddlewareQQ
 from utils.worker import Worker
 from model.flight import Flight
 from model.duration import Duration
-from utils.flightQ4Serializer import FlightQ4Serializer
+from utils.serializer.flightQ4Serializer import FlightQ4Serializer
 
 class Query4Handler(Worker):
     def __init__(self, chunk_size):

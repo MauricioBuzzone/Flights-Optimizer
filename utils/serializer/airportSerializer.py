@@ -1,6 +1,5 @@
-from utils.serializer import Serializer
+from utils.serializer.serializer import Serializer
 from utils.protocol import TlvTypes, SIZE_LENGTH
-from utils.protocol import integer_to_bytes, integer_from_bytes
 from utils.protocol import string_to_bytes, string_from_bytes
 from utils.protocol import float_to_bytes, float_from_bytes
 from utils.protocol import code_to_bytes

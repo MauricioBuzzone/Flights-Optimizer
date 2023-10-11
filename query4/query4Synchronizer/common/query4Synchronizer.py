@@ -1,6 +1,6 @@
 from utils.worker import Worker
 from middleware.middlewareQE import MiddlewareQE
-from utils.resultQ4Serializer import ResultQ4Serializer
+from utils.serializer.resultQ4Serializer import ResultQ4Serializer
 
 class Query4Synchronizer(Worker):
     def __init__(self, chunk_size):

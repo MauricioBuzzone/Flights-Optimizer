@@ -4,11 +4,11 @@ import logging
 
 from utils.TCPHandler import SocketBroken
 from utils.protocol import make_eof
-from utils.airportSerializer import AirportSerializer
-from utils.flightSerializer import FlightSerializer
-from utils.flightQ1Serializer import FlightQ1Serializer
-from utils.flightQ2Serializer import FlightQ2Serializer
-from utils.flightQ4Serializer import FlightQ4Serializer
+from utils.serializer.airportSerializer import AirportSerializer
+from utils.serializer.flightSerializer import FlightSerializer
+from utils.serializer.flightQ1Serializer import FlightQ1Serializer
+from utils.serializer.flightQ2Serializer import FlightQ2Serializer
+from utils.serializer.flightQ4Serializer import FlightQ4Serializer
 from utils.protocolHandler import ProtocolHandler
 
 from common.clientHandlerMiddleware import ClientHandlerMiddleware

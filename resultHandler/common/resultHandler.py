@@ -2,10 +2,10 @@ import csv
 import io
 import logging
 import signal
-from utils.flightQ1Serializer import FlightQ1Serializer
-from utils.flightQ2Serializer import FlightQ2Serializer
-from utils.resultQ3Serializer import ResultQ3Serializer
-from utils.resultQ4Serializer import ResultQ4Serializer
+from utils.serializer.flightQ1Serializer import FlightQ1Serializer
+from utils.serializer.flightQ2Serializer import FlightQ2Serializer
+from utils.serializer.resultQ3Serializer import ResultQ3Serializer
+from utils.serializer.resultQ4Serializer import ResultQ4Serializer
 from utils.protocol import is_eof
 
 from common.resultHandlerMiddleware import ResultHandlerMiddleware

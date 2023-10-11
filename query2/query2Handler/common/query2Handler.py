@@ -1,7 +1,7 @@
 import logging
 from utils.worker import Worker
 from middleware.middlewareQE import MiddlewareQE
-from utils.flightQ2Serializer import FlightQ2Serializer
+from utils.serializer.flightQ2Serializer import FlightQ2Serializer
 from geopy.distance import geodesic
 
 class Query2Handler(Worker):

@@ -1,7 +1,7 @@
 import logging
 from utils.worker import Worker
 from middleware.middlewareQE import MiddlewareQE
-from utils.flightQ1Serializer import FlightQ1Serializer
+from utils.serializer.flightQ1Serializer import FlightQ1Serializer
 
 class Query1Handler(Worker):
     def __init__(self, peers):

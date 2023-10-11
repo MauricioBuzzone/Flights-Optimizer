@@ -1,6 +1,6 @@
 from utils.worker import Worker
 from middleware.middlewareEQ import MiddlewareEQ
-from utils.airportSerializer import AirportSerializer
+from utils.serializer.airportSerializer import AirportSerializer
 
 class AirportHandler(Worker):
     def __init__(self, airports: list):

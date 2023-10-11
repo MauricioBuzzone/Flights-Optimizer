@@ -6,8 +6,8 @@ from model.flight import Flight
 from model.airport import Airport
 from model.duration import Duration
 
-from utils.flightSerializer import FlightSerializer
-from utils.airportSerializer import AirportSerializer
+from utils.serializer.flightSerializer import FlightSerializer
+from utils.serializer.airportSerializer import AirportSerializer
 
 class TestUtils(unittest.TestCase):
     def test_serializer_can_packet_two_airport_in_the_same_mesagge(self):
@@ -24,7 +24,6 @@ class TestUtils(unittest.TestCase):
             latitude=0.0,
             longitude=12,
         )
-
 
         chunk = serializer.to_bytes([airport1, airport2])
         reader = io.BytesIO(chunk)

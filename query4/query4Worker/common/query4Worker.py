@@ -1,8 +1,8 @@
 from utils.worker import Worker
 from middleware.middlewareQQ import MiddlewareQQ
-from utils.flightQ4Serializer import FlightQ4Serializer
-from utils.resultQ4Serializer import ResultQ4Serializer
-from utils.resultQ4 import ResultQ4
+from utils.serializer.flightQ4Serializer import FlightQ4Serializer
+from utils.serializer.resultQ4Serializer import ResultQ4Serializer
+from utils.result.resultQ4 import ResultQ4
 
 class Query4Worker(Worker):
     def __init__(self, peers, chunk_size):

@@ -1,7 +1,7 @@
 from model.flight import Flight
 from model.duration import Duration
-from utils.resultQ3 import ResultQ3
-from utils.serializer import Serializer
+from utils.result.resultQ3 import ResultQ3
+from utils.serializer.serializer import Serializer
 from utils.protocol import TlvTypes, SIZE_LENGTH
 from utils.protocol import integer_to_bytes, integer_from_bytes
 from utils.protocol import string_to_bytes, string_from_bytes
