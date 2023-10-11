@@ -22,6 +22,7 @@ def initialize_config():
     try:
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["peers"] = int(os.environ['PEERS'])
+        config_params["min_legs"] = int(os.getenv('MIN_LEGS', config["DEFAULT"]["MIN_LEGS"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -33,6 +34,8 @@ def initialize_config():
 def main():
     config_params = initialize_config()
     logging_level = config_params["logging_level"]
+    min_legs = config_params["min_legs"]
+    peers = config_params['peers']
 
     initialize_log(logging_level)
 
@@ -41,7 +44,7 @@ def main():
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    queryHandler = Query1Handler(config_params['peers'])
+    queryHandler = Query1Handler(peers, min_legs)
     queryHandler.run()
 
 

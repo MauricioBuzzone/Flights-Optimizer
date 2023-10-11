@@ -1,6 +1,3 @@
-from model.duration import Duration
-from model.flight import Flight
-
 class ResultQ3:
     def __init__(self, flight1, flight2 = None):
         assert flight1, 'first flight must not be None'

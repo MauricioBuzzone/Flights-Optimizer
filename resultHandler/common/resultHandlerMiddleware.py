@@ -9,9 +9,11 @@ class ResultHandlerMiddleware(Middleware):
         self.channel.exchange_declare(exchange='results', exchange_type='direct')
         result = self.channel.queue_declare(queue='', exclusive=True)
         self.result_queue_name = result.method.queue
+        logging.debug(f'action: declare_in_exchange | exchange: results')
 
         for i in range(1, 5):
             self.channel.queue_bind(exchange='results', queue=self.result_queue_name, routing_key=f'Q{i}')
+            logging.debug(f'action: bind_queue | queue: {self.result_queue_name} | exchange: results | tag: Q{i}')
         self._callback_results = None
 
     def start(self):

@@ -5,7 +5,7 @@ class ClientHandlerMiddleware(Middleware):
         super().__init__()
         
         # Declare exchange to send airports
-        self.channel.exchange_declare(exchange='airports', exchange_type='fanout')
+        self.channel.exchange_declare(exchange='airports', exchange_type='direct')
 
         # Declare queue to send flights to QUERY1
         self.channel.queue_declare(queue='Q1-flights', durable=True)
