@@ -2,7 +2,9 @@
 import yaml
 import argparse
 
-from config import AMOUNT_OF_AIRPORT_HANDLER, AMOUNT_OF_QUERY1_HANDLER, AMOUNT_OF_QUERY4_WORKERS, AMOUNT_OF_QUERY3_WORKERS
+from config import AMOUNT_OF_AIRPORT_HANDLER, AMOUNT_OF_QUERY1_HANDLER
+from config import AMOUNT_OF_QUERY4_WORKERS, AMOUNT_OF_QUERY3_WORKERS
+from config import LOGGING_LEVEL
 
 def create_network():
     return {
@@ -20,7 +22,7 @@ def create_client():
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
         ],
         'volumes': [
             './client/config.ini:/config.ini',
@@ -42,7 +44,7 @@ def create_clientHandler():
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
         ],
         'volumes': [
             './clientHandler/config.ini:/config.ini',
@@ -63,7 +65,7 @@ def create_query1Handler(i):
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
             'PEERS='+str(AMOUNT_OF_QUERY1_HANDLER),
         ],
         'volumes': [
@@ -84,7 +86,7 @@ def create_airportHandler(i):
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
             'PEERS='+str(AMOUNT_OF_AIRPORT_HANDLER),
         ],
         'volumes': [
@@ -105,7 +107,7 @@ def create_query3Handler():
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
         ],
         'volumes': [
             './query3/query3Handler/config.ini:/config.ini',
@@ -123,7 +125,7 @@ def create_query3Worker(i):
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
             'PEERS='+str(AMOUNT_OF_QUERY3_WORKERS),
         ],
         'volumes': [
@@ -144,7 +146,7 @@ def create_query3Synchronizer():
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
         ],
         'volumes': [
             './query3/query3Synchronizer/config.ini:/config.ini',
@@ -164,7 +166,7 @@ def create_query4Handler():
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
         ],
         'volumes': [
             './query4/query4Handler/config.ini:/config.ini',
@@ -182,7 +184,7 @@ def create_query4Worker(i):
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
             'PEERS='+str(AMOUNT_OF_QUERY4_WORKERS),
         ],
         'volumes': [
@@ -203,7 +205,7 @@ def create_query4Synchronizer():
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
         ],
         'volumes': [
             './query4/query4Synchronizer/config.ini:/config.ini',
@@ -223,7 +225,7 @@ def create_resultHandler():
         'entrypoint': 'python3 /main.py',
         'environment': [
             'PYTHONUNBUFFERED=1',
-            'LOGGING_LEVEL=INFO',
+            f'LOGGING_LEVEL={LOGGING_LEVEL}',
         ],
         'volumes': [
             './resultHandler/config.ini:/config.ini',
