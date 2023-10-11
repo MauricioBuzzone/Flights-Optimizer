@@ -25,18 +25,18 @@ class Middleware:
             self.stop()
 
     def stop(self):
-        logging.info(f"action: stop_middleware | result: in_progress")
+        logging.debug(f"action: stop_middleware | result: in_progress")
         if self.active_channel:
-            logging.info(f"action: stop_middleware | close channel")
+            logging.debug(f"action: stop_middleware | close channel")
             self.active_channel = False
             self.channel.stop_consuming()
 
         if self.active_connection:
-            logging.info(f"action: stop_middleware | close connection")
+            logging.debug(f"action: stop_middleware | close connection")
             self.active_connection = False
             self.connection.close()
 
-        logging.info(f"action: stop_middleware | result: success")
+        logging.debug(f"action: stop_middleware | result: success")
 
     def send_msg(self, routing_key, data, exchange=''):
         self.channel.basic_publish(
@@ -53,7 +53,7 @@ class Middleware:
 
         self.active_channel = True
         self.callback_func = callback
-        logging.info(f"action: consuming_queue | queue: {queue_consume}")
+        logging.debug(f"action: consuming_queue | queue: {queue_consume}")
         self.channel.basic_consume(queue=queue_consume, 
                                    on_message_callback=self.callback)
 

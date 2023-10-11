@@ -24,18 +24,18 @@ class Listener():
         return True
 
     def run(self):
-        logging.info(f'action: listen_flights | result: in_progress')
+        logging.debug(f'action: listen_flights | result: in_progress')
         self.middleware.listen(self.recv)
-        logging.info(f'action: listen_flights | result: success')
+        logging.debug(f'action: listen_flights | result: success')
 
         self.middleware.start()
 
-        logging.info(f'action: stop | result: in_progress')
+        logging.debug(f'action: stop | result: in_progress')
         self.middleware.stop()
-        logging.info(f'action: stop | result: success')
+        logging.debug(f'action: stop | result: success')
 
     # VOLATIL
     def __handle_signal(self, signum, frame):
-        logging.info(f'action: stop_handler | result: in_progress | signal {signum}')
+        logging.debug(f'action: stop_handler | result: in_progress | signal {signum}')
         self.middleware.stop()
-        logging.info(f'action: stop_handler | result: success')
+        logging.debug(f'action: stop_handler | result: success')
