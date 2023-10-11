@@ -28,9 +28,10 @@ class Client:
 
     def run(self):
         # Read airports.csv and send to the system.
-        self.connect()
+        self.connect(self.config["ip"], self.config["port"])
         self.send_airports()
 
+        # TODO: quitar
         time.sleep(5)
 
         # Read flights.csv and send to the system.
@@ -38,14 +39,28 @@ class Client:
         self.disconnect()
 
         # poll results
+        self.connect(self.config["results_ip"], self.config["results_port"])
+        self.poll_results()
+        self.disconnect()
 
-    def connect(self):
+    def connect(self, ip, port):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((self.config["ip"], self.config["port"]))
+        self.socket.connect((ip, port))
         self.protocolHandler = ProtocolHandler(self.socket)
 
     def disconnect(self):
         self.socket.close()
+
+    """
+    def poll_results(self):
+        keep_running = True
+        while keep_running:
+            results = self.protocolHandler.poll_results()
+            if self.protocolHandler.is_wait(results):
+            elif self.protocolHandler.is_eof(results):
+            elif self.protocolHandler:
+            else:
+    """
 
     def send_flights(self):
         self.send_file(self.flight_path,
@@ -75,7 +90,7 @@ class Client:
                 batch = []
                 for line in csvFile:
                     element = parser(line)
-                    
+
                     batch.append(element)
                     if len(batch) == chunk_size:
                         logging.info(f'lines sended: {100*i/2e6}%')

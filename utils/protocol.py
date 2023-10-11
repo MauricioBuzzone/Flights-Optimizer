@@ -54,6 +54,10 @@ class TlvTypes():
     RESULT_Q3_DURATION2_HOURS = next()
     RESULT_Q3_DURATION2_MINUTES = next()
 
+    LINE_CHUNK = next()
+    LINE = next()
+    LINE_RAW = next()
+
     ACK = next()
 
 def is_eof(bytes):
