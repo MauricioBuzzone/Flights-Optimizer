@@ -22,7 +22,7 @@ class Worker(Listener):
     def recv_raw(self, raw):
         reader = io.BytesIO(raw)
         input_chunk = self.in_serializer.from_chunk(reader)
-        logging.info(f'action: new_chunk | chunck_len: {len(input_chunk)}')
+        logging.debug(f'action: new_chunk | chunck_len: {len(input_chunk)}')
 
         for input in input_chunk:
             self.work(input)
@@ -35,7 +35,7 @@ class Worker(Listener):
     def send_results(self):
         chunk = []
         for result in self.results.values():
-            logging.info(f'action: publish_result | value: {result}')
+            logging.debug(f'action: publish_result | value: {result}')
             chunk.append(result)
             if len(chunk) >= self.chunk_size:
                 data = self.out_serializer.to_bytes(chunk)
@@ -52,11 +52,11 @@ class Worker(Listener):
 
         if closed_peers < self.peers - 1:
             # Send EOF to other peers.
-            logging.info(f'action: recv EOF | result: in_progress | peers = {self.peers} | closed_peers: {closed_peers}')
+            logging.debug(f'action: recv EOF | result: in_progress | peers = {self.peers} | closed_peers: {closed_peers}')
             new_eof = make_eof(closed_peers + 1)
             self.middleware.resend(new_eof)
         else:
             # All my peers are closed, send EOF to ResultQueue
-            logging.info(f'action: recv EOF | result: in_progress | peers = {self.peers} | closed_peers: {closed_peers}')
+            logging.debug(f'action: recv EOF | result: in_progress | peers = {self.peers} | closed_peers: {closed_peers}')
             last_eof = make_eof(0)
             self.middleware.publish(last_eof)

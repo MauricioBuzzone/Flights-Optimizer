@@ -36,11 +36,11 @@ class Query4Handler(Worker):
                                 total_fare=total_fare, legs=[], flight_duration=Duration(0,0))
                 chunk.append(flight)
                 if len(chunk) >= self.chunk_size:
-                    logging.info(f'action: publishing_chunk | len(chunk): {len(chunk)}')
+                    logging.debug(f'action: publishing_chunk | len(chunk): {len(chunk)}')
                     data = self.out_serializer.to_bytes(chunk)
                     self.middleware.publish(data)
                     chunk = []
         if chunk:
-            logging.info(f'action: publishing_chunk | len(chunk): {len(chunk)}')
+            logging.debug(f'action: publishing_chunk | len(chunk): {len(chunk)}')
             data = self.out_serializer.to_bytes(chunk)
             self.middleware.publish(data)

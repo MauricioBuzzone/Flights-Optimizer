@@ -21,15 +21,15 @@ class Query2Handler(Worker):
     def work(self, input):
         flight = input
         if not (flight.origin in self.airports):
-            logging.info(f'action: Q2 filter | result: origin({flight.origin}) not in database')
+            logging.error(f'action: Q2 filter | result: origin({flight.origin}) not in database')
             return
         if not (flight.destiny in self.airports):
-            logging.info(f'action: Q2 filter | result: destiny({flight.destiny}) not in database')
+            logging.error(f'action: Q2 filter | result: destiny({flight.destiny}) not in database')
             return
 
         distance = geodesic(self.airports[flight.origin], self.airports[flight.destiny]).miles
         if flight.total_distance > self.distance_rate * distance:
-            logging.info(f'action: publish_flight | value: {flight}')
+            logging.debug(f'action: publish_flight | value: {flight}')
             self.filtered_flights.append(flight)
 
     def do_after_work(self):

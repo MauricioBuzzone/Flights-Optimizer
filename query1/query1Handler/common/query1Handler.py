@@ -19,7 +19,7 @@ class Query1Handler(Worker):
     def work(self, input):
         flight = input
         if len(flight.legs) >= self.min_legs:
-            logging.info(f'action: publish_flight | value: {flight}')
+            logging.debug(f'action: publish_flight | value: {flight}')
             self.filtered_flights.append(flight)
 
     def do_after_work(self):

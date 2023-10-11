@@ -44,9 +44,9 @@ class ClientHandler:
                 self.__handle_client_connection(client_sock)
 
         self._server_socket.close()
-        logging.info(f'action: release_socket | result: success')
+        logging.debug(f'action: release_socket | result: success')
         self.middleware.stop()
-        logging.info(f'action: release_rabbitmq_conn | result: success')
+        logging.debug(f'action: release_rabbitmq_conn | result: success')
 
     def __handle_client_connection(self, client_sock):
         """
@@ -76,15 +76,15 @@ class ClientHandler:
             logging.error(f'action: receive_message | result: fail | error: {e}')
         finally:
             if client_sock:
-                logging.info(f'action: release_client_socket | result: success')
+                logging.debug(f'action: release_client_socket | result: success')
                 client_sock.close()
-                logging.info(f'action: finishing | result: success')
+                logging.debug(f'action: finishing | result: success')
     
     def __handle_airport_eof(self):
         eof = make_eof()
         self.middleware.send_airport(eof)
 
-        logging.info(f'action: send_airports | value: EOF | result: success')
+        logging.debug(f'action: send_airports | value: EOF | result: success')
         return True
 
     def __handle_airports(self, value):
@@ -95,7 +95,7 @@ class ClientHandler:
         return True
 
     def __handle_flight_eof(self):
-        logging.info(f'action: read flight_eof | result: success')
+        logging.debug(f'action: read flight_eof | result: success')
         eof = make_eof(0)
         self.middleware.send_eof(eof)
         return False
@@ -103,7 +103,7 @@ class ClientHandler:
     def __handle_flights(self, flights):
         #  It's responsible for separating the relevant 
         #  fields for each query and sending them to different queues.
-        logging.info(f'action: recived flights | result: success | N: {len(flights)}')
+        logging.debug(f'action: recived flights | result: success | N: {len(flights)}')
 
         # Q1:
         data = self.flight_q1_serializer.to_bytes(flights)
@@ -125,22 +125,22 @@ class ClientHandler:
         Then connection created is printed and returned
         """
         try:
-            logging.info('action: accept_connections | result: in_progress')
+            logging.debug('action: accept_connections | result: in_progress')
             c, addr = self._server_socket.accept()
-            logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
+            logging.debug(f'action: accept_connections | result: success | ip: {addr[0]}')
             return c
         except OSError as e:
             if self._server_on:
                 logging.error(f'action: accept_connections | result: fail')
             else:
-                logging.info(f'action: stop_accept_connections | result: success')
+                logging.debug(f'action: stop_accept_connections | result: success')
             return
 
     def __handle_signal(self, signum, frame):
         """
         Close server socket graceful
         """
-        logging.info(f'action: stop_server | result: in_progress | singal {signum}')
+        logging.debug(f'action: stop_server | result: in_progress | singal {signum}')
         self._server_on = False
         self._server_socket.shutdown(socket.SHUT_RDWR)
-        logging.info(f'action: shutdown_socket | result: success')
+        logging.debug(f'action: shutdown_socket | result: success')
