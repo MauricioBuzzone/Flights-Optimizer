@@ -14,10 +14,16 @@ class Query1Handler(Worker):
                          peers=peers,
                          chunk_size=1,)
         self.min_legs = min_legs
+        self.filtered_flights = []
 
     def work(self, input):
         flight = input
         if len(flight.legs) >= self.min_legs:
             logging.info(f'action: publish_flight | value: {flight}')
-            data = self.out_serializer.to_bytes([flight])
+            self.filtered_flights.append(flight)
+
+    def do_after_work(self):
+        if self.filtered_flights:
+            data = self.out_serializer.to_bytes(self.filtered_flights)
             self.middleware.publish(data)
+        self.filtered_flights = []

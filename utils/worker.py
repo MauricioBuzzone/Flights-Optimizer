@@ -13,8 +13,11 @@ class Worker(Listener):
         self.peers = peers
         self.chunk_size = chunk_size
 
+    def do_after_work(self):
+        return 
+
     def work(self, input):
-        raise RuntimeError("Must be redefined")
+        return
 
     def recv_raw(self, raw):
         reader = io.BytesIO(raw)
@@ -23,6 +26,7 @@ class Worker(Listener):
 
         for input in input_chunk:
             self.work(input)
+        self.do_after_work()
 
     def recv_eof(self, eof):
         self.send_results()

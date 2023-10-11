@@ -16,6 +16,7 @@ class Query2Handler(Worker):
                          chunk_size=chunk_size)
         self.airports = airports
         self.distance_rate = distance_rate
+        self.filtered_flights = []
 
     def work(self, input):
         flight = input
@@ -29,5 +30,9 @@ class Query2Handler(Worker):
         distance = geodesic(self.airports[flight.origin], self.airports[flight.destiny]).miles
         if flight.total_distance > self.distance_rate * distance:
             logging.info(f'action: publish_flight | value: {flight}')
-            data = self.out_serializer.to_bytes([flight])
+            self.filtered_flights.append(flight)
+
+    def do_after_work(self):
+        if self.filtered_flights:
+            data = self.out_serializer.to_bytes(self.filtered_flights)
             self.middleware.publish(data)
