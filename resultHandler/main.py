@@ -49,6 +49,9 @@ def main():
     resultReceiver = ResultReceiver(lock)
     resultSender = ResultSender(config_params, lock)
 
+    # creating the file
+    open('results.csv', "w").close()
+
     p1 = Process(target=resultReceiver.run, args=())
     p2 = Process(target=resultSender.run, args=())
     p1.start(); p2.start()

@@ -18,6 +18,9 @@ SEGMENTS_DEPARTURE_COD = 20;
 
 AIRPORT_COD = 0;AIRPORT_LAT = 5;AIRPORT_LON = 6
 
+MAX_TIME_SLEEP = 8      # seconds
+MIN_TIME_SLEEP = 1    # seconds
+TIME_SLEEP_SCALE = 2    # 2 * t
 
 class Client:
     def __init__(self, config_params):
@@ -43,6 +46,8 @@ class Client:
         self.poll_results()
         self.disconnect()
 
+        logging.info(f'action: closing client')
+
     def connect(self, ip, port):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((ip, port))
@@ -51,16 +56,29 @@ class Client:
     def disconnect(self):
         self.socket.close()
 
-    """
+    def save_results(self, results):
+        for result in results:
+            logging.info(f'result: {result}')
+
     def poll_results(self):
         keep_running = True
+        t_sleep = MIN_TIME_SLEEP
         while keep_running:
-            results = self.protocolHandler.poll_results()
-            if self.protocolHandler.is_wait(results):
-            elif self.protocolHandler.is_eof(results):
-            elif self.protocolHandler:
+            logging.info('action: polling | result: in_progress')
+            t, value = self.protocolHandler.poll_results()
+            if self.protocolHandler.is_result_wait(t):
+                logging.info(f'action: polling | result: wait')
+                time.sleep(t_sleep)
+                t_sleep = min(TIME_SLEEP_SCALE*t_sleep, MAX_TIME_SLEEP)
+            elif self.protocolHandler.is_result_eof(t):
+                logging.info(f'action: polling | result: eof')
+                keep_running = False
+            elif self.protocolHandler.is_results(t):
+                logging.info(f'action: polling | result: succes | len(results): {len(value)}')
+                t_sleep = max(t_sleep/TIME_SLEEP_SCALE, MIN_TIME_SLEEP)
+                self.save_results(value)
             else:
-    """
+                logging.info(f'action: polling | result: fail | type: {t}')
 
     def send_flights(self):
         self.send_file(self.flight_path,

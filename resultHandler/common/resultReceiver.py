@@ -30,6 +30,7 @@ class ResultReceiver():
         self.middleware.stop()
 
     def save_results(self, results_raw, results_type):
+        logging.info('action: receive_result')
         results = self.deserialize_result(results_raw, results_type)
 
         self.file_lock.acquire()
@@ -63,7 +64,8 @@ class ResultReceiver():
         with open(f'results.csv', 'a', encoding='UTF8') as file:
             writer = csv.writer(file)
             writer.writerow(['EOF'])
-
+        self.file_lock.release()
+    
     def deserialize_result(self, bytes_raw, type):
         reader = io.BytesIO(bytes_raw)
         results = self.serializers[type].from_chunk(reader)        
