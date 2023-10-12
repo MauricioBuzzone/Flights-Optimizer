@@ -85,7 +85,8 @@ class ResultSender():
                 self.respond(tcpHandler, chunk)
 
         except (SocketBroken,OSError) as e:
-            logging.error(f'action: receive_message | result: fail | error: {e}')
+            if not self.eof_readed:
+                logging.error(f'action: receive_message | result: fail | error: {e}')
         finally:
             if client_sock:
                 logging.debug(f'action: release_client_socket | result: success')

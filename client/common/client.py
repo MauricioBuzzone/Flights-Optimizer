@@ -29,6 +29,8 @@ class Client:
         self.config = config_params
         self.airport_path = config_params["airport_path"]
         self.flight_path = config_params["flight_path"]
+        self.results_file = config_params["results_path"]
+        self.query_sizes = {'Q1':0, 'Q2':0, 'Q3':0, 'Q4':0}
 
     def run(self):
         # Read airports.csv and send to the system.
@@ -41,7 +43,11 @@ class Client:
 
         # poll results
         self.connect(self.config["results_ip"], self.config["results_port"])
+        logging.info('action: poll_results | result: in_progress')
         self.poll_results()
+        logging.info('action: poll_results | result: success | nQ1: {} | nQ2: {} | nQ3: {} | nQ4: {}'.format(
+            self.query_sizes['Q1'], self.query_sizes['Q2'], self.query_sizes['Q3'], self.query_sizes['Q4']
+        ))
         self.disconnect()
 
         logging.info(f'action: closing client')
@@ -55,8 +61,12 @@ class Client:
         self.socket.close()
 
     def save_results(self, results):
-        for result in results:
-            logging.info(f'result: {result}')
+        with open(self.results_file, 'a') as file:
+            for result in results:
+                file.write(result)
+                file.write('\n')
+                self.query_sizes[result[:2]] += 1
+                logging.info(f'result: {result}')
 
     def poll_results(self):
         keep_running = True

@@ -64,6 +64,7 @@ services:
     - ./client/config.ini:/config.ini
     - ./client/airports-codepublic.csv:/airports-codepublic.csv
     - ./client/itineraries_random_2M.csv:/itineraries_random_2M.csv
+    - ./client/results.csv:/results.csv
   clientHandler:
     container_name: clientHandler
     depends_on:
