@@ -30,11 +30,6 @@ class Listener():
 
         self.middleware.start()
 
-        logging.debug(f'action: stop | result: in_progress')
-        self.middleware.stop()
-        logging.debug(f'action: stop | result: success')
-
-    # VOLATIL
     def __handle_signal(self, signum, frame):
         logging.debug(f'action: stop_handler | result: in_progress | signal {signum}')
         self.middleware.stop()
