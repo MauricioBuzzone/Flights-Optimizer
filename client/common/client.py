@@ -2,6 +2,7 @@ import socket
 import logging
 import csv
 import re
+import os
 
 import time
 
@@ -34,9 +35,6 @@ class Client:
         self.connect(self.config["ip"], self.config["port"])
         self.send_airports()
 
-        # TODO: quitar
-        time.sleep(5)
-
         # Read flights.csv and send to the system.
         self.send_flights()
         self.disconnect()
@@ -64,21 +62,21 @@ class Client:
         keep_running = True
         t_sleep = MIN_TIME_SLEEP
         while keep_running:
-            logging.info('action: polling | result: in_progress')
+            logging.debug('action: polling | result: in_progress')
             t, value = self.protocolHandler.poll_results()
             if self.protocolHandler.is_result_wait(t):
-                logging.info(f'action: polling | result: wait')
+                logging.debug(f'action: polling | result: wait')
                 time.sleep(t_sleep)
                 t_sleep = min(TIME_SLEEP_SCALE*t_sleep, MAX_TIME_SLEEP)
             elif self.protocolHandler.is_result_eof(t):
-                logging.info(f'action: polling | result: eof')
+                logging.debug(f'action: polling | result: eof')
                 keep_running = False
             elif self.protocolHandler.is_results(t):
-                logging.info(f'action: polling | result: succes | len(results): {len(value)}')
+                logging.debug(f'action: polling | result: succes | len(results): {len(value)}')
                 t_sleep = max(t_sleep/TIME_SLEEP_SCALE, MIN_TIME_SLEEP)
                 self.save_results(value)
             else:
-                logging.info(f'action: polling | result: fail | type: {t}')
+                logging.error(f'action: polling | result: fail | unknown_type: {t}')
 
     def send_flights(self):
         self.send_file(self.flight_path,
@@ -101,30 +99,32 @@ class Client:
     def send_file(self, path, delimiter, parser, chunk_size, send_message, send_eof):
         logging.info(f'action: send file | result: in_progress | path: {path}')
         try:
-            i = 0
+            file_size = os.path.getsize(path)
+            cursor = 0
             with open(path, mode ='r') as file:
-                csvFile = csv.reader(file,delimiter=delimiter)
-                next(csvFile, None)  # skip the headers
+                file.readline()  # skip the headers
                 batch = []
-                for line in csvFile:
-                    element = parser(line)
+                while line := file.readline():
+                    element = parser(line.split(delimiter))
 
                     batch.append(element)
                     if len(batch) == chunk_size:
-                        logging.info(f'lines sended: {100*i/2e6}%')
-                        i += chunk_size                    
                         send_message(batch)
                         batch = []
+                        logging.info('action: read {} | progress: {:.2f}%'.format(
+                            path, 100*(file.tell())/(file_size)
+                        ))
 
                 if batch:
-                    logging.info(f'lines sended: {100*i/2e6}%')
-                    i += len(batch)   
                     send_message(batch)
+                    logging.info('action: read {} | progress: {:.2f}%'.format(
+                        path, 100*(file.tell())/(file_size)
+                    ))
                 send_eof()
         except (SocketBroken,OSError) as e:
             logging.error(f'action: send file | result: fail | error: {e}')
         else: 
-            logging.info(f'action: send file | result: sucesfull | path: {path}')
+            logging.info(f'action: send file | result: success | path: {path}')
 
 
 def parser_airport(line):

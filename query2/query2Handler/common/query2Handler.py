@@ -36,3 +36,4 @@ class Query2Handler(Worker):
         if self.filtered_flights:
             data = self.out_serializer.to_bytes(self.filtered_flights)
             self.middleware.publish(data)
+        self.filtered_flights = []

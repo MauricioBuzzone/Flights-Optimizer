@@ -30,7 +30,6 @@ class ResultReceiver():
         self.middleware.stop()
 
     def save_results(self, results_raw, results_type):
-        logging.info('action: receive_result')
         results = self.deserialize_result(results_raw, results_type)
 
         self.file_lock.acquire()
