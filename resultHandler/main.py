@@ -1,5 +1,7 @@
+from multiprocessing import Process, Lock
 from configparser import ConfigParser
-from common.resultHandler import ResultHandler
+from common.resultReceiver import ResultReceiver
+from common.resultSender import ResultSender
 import logging
 import os
 
@@ -21,6 +23,9 @@ def initialize_config():
     config_params = {}
     try:
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
+        config_params["ip"] = os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"])
+
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -40,9 +45,17 @@ def main():
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    resultHandler = ResultHandler()
-    resultHandler.run()
+    lock = Lock()
+    resultReceiver = ResultReceiver(lock)
+    resultSender = ResultSender(config_params, lock)
 
+    # creating the file
+    open('results.csv', "w").close()
+
+    p1 = Process(target=resultReceiver.run, args=())
+    p2 = Process(target=resultSender.run, args=())
+    p1.start(); p2.start()
+    p1.join() ; p2.join()
 
 def initialize_log(logging_level):
     """

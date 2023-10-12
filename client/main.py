@@ -23,8 +23,14 @@ def initialize_config():
     try:
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["ip"] = os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"])
+
+        config_params["results_port"] = int(os.getenv('RESULT_PORT', config["DEFAULT"]["RESULT_PORT"]))
+        config_params["results_ip"] = os.getenv('RESULT_IP', config["DEFAULT"]["RESULT_IP"])
+
         config_params["airport_path"] = os.getenv('AIRPORT_PATH', config["DEFAULT"]["AIRPORT_PATH"])
         config_params["flight_path"] = os.getenv('FLIGHT_PATH', config["DEFAULT"]["FLIGHT_PATH"])
+        config_params["results_path"] = os.getenv('RESULTS_PATH', config["DEFAULT"]["RESULTS_PATH"])
+
         config_params["chunk_size_airport"] = int(os.getenv('CHUNK_SIZE_AIRPORT', config["DEFAULT"]["CHUNK_SIZE_AIRPORT"]))
         config_params["chunk_size_flight"] = int(os.getenv('CHUNK_SIZE_FLIGHT', config["DEFAULT"]["CHUNK_SIZE_FLIGHT"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
@@ -45,6 +51,7 @@ def main():
     chunk_size_flight = config_params["chunk_size_flight"]
     airport_path = config_params["airport_path"]
     flight_path = config_params["flight_path"]
+    results_path = config_params["results_path"]
 
     initialize_log(logging_level)
 
@@ -56,10 +63,12 @@ def main():
                   | chunk_size_airport: {chunk_size_airport} 
                   | chunk_size_flight: {chunk_size_flight} 
                   | airport_path: {airport_path}
-                  | flight_path: {flight_path} 
+                  | flight_path: {flight_path}
+                  | results_path: {results_path}
                   | logging_level: {logging_level}''')
 
     # Initialize server and start server loop
+    open(results_path, "w").close()
     client = Client(config_params)
     client.run()
 

@@ -14,6 +14,8 @@ class TlvTypes():
 
     # types
     EOF = next()
+    WAIT = next()
+    POLL = next()
     
     AIRPORT_CHUNK = next()
     AIRPORT = next()
@@ -54,6 +56,10 @@ class TlvTypes():
     RESULT_Q3_DURATION2_HOURS = next()
     RESULT_Q3_DURATION2_MINUTES = next()
 
+    LINE_CHUNK = next()
+    LINE = next()
+    LINE_RAW = next()
+
     ACK = next()
 
 def is_eof(bytes):
@@ -71,6 +77,11 @@ def get_closed_peers(bytes):
         data, n = struct.unpack("!ii", bytes)
         return n
     return -1
+
+def make_wait():
+    bytes = code_to_bytes(TlvTypes.WAIT)
+    bytes += int.to_bytes(i, SIZE_LENGTH, 'big')
+    return bytes
 
 def make_eof(i = 0):
     bytes = code_to_bytes(TlvTypes.EOF)

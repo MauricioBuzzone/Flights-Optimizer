@@ -79,7 +79,7 @@ class ClientHandler:
                 logging.debug(f'action: release_client_socket | result: success')
                 client_sock.close()
                 logging.debug(f'action: finishing | result: success')
-    
+
     def __handle_airport_eof(self):
         eof = make_eof()
         self.middleware.send_airport(eof)

@@ -27,7 +27,8 @@ def create_client():
         'volumes': [
             './client/config.ini:/config.ini',
             './client/airports-codepublic.csv:/airports-codepublic.csv',
-            './client/itineraries_random_2M.csv:/itineraries_random_2M.csv'
+            './client/itineraries_random_2M.csv:/itineraries_random_2M.csv',
+            './client/results.csv:/results.csv',
         ],
         'depends_on': [
             'clientHandler',

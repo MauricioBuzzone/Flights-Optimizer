@@ -56,7 +56,7 @@ services:
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
-    - LOGGING_LEVEL=ERROR
+    - LOGGING_LEVEL=INFO
     image: client:latest
     networks:
     - middleware_testing_net
@@ -64,6 +64,7 @@ services:
     - ./client/config.ini:/config.ini
     - ./client/airports-codepublic.csv:/airports-codepublic.csv
     - ./client/itineraries_random_2M.csv:/itineraries_random_2M.csv
+    - ./client/results.csv:/results.csv
   clientHandler:
     container_name: clientHandler
     depends_on:

@@ -10,16 +10,16 @@ from utils.protocol import is_eof
 
 from common.resultHandlerMiddleware import ResultHandlerMiddleware
 
-class ResultHandler():
-    def __init__(self):
+class ResultReceiver():
+    def __init__(self, file_lock):
         signal.signal(signal.SIGTERM, self.__handle_signal)
         self.serializers = {'Q1': FlightQ1Serializer(),
                             'Q2': FlightQ2Serializer(),
                             'Q3': ResultQ3Serializer(),
                             'Q4': ResultQ4Serializer(),}
-        
-        # last thing to do:
+        self.eofs = {'Q1': False, 'Q2': False, 'Q3': False, 'Q4': False}
         self.middleware = ResultHandlerMiddleware()
+        self.file_lock = file_lock
 
     def run(self):
         logging.debug(f'action: listen_results | result: in_progress')
@@ -32,8 +32,8 @@ class ResultHandler():
     def save_results(self, results_raw, results_type):
         results = self.deserialize_result(results_raw, results_type)
 
-        # TODO: tomar lock result.csv?
-        with open(f'results{results_type}.csv', 'a', encoding='UTF8') as file:
+        self.file_lock.acquire()
+        with open(f'results.csv', 'a', encoding='UTF8') as file:
             writer = csv.writer(file)
 
             for result in results:
@@ -54,16 +54,28 @@ class ResultHandler():
                 elif results_type == 'Q4':
                     journey = '-'.join([result.origin, result.destiny])
                     writer.writerow(['Q4', journey, result.fare_avg, result.fare_max])
-                else: 
+                else:
                     continue
+        self.file_lock.release()
 
+    def write_eof(self):
+        self.file_lock.acquire()
+        with open(f'results.csv', 'a', encoding='UTF8') as file:
+            writer = csv.writer(file)
+            writer.writerow(['EOF'])
+        self.file_lock.release()
+    
     def deserialize_result(self, bytes_raw, type):
         reader = io.BytesIO(bytes_raw)
         results = self.serializers[type].from_chunk(reader)        
         if is_eof(bytes_raw):
+            self.eofs[type] = True
             logging.debug(f'action: recv EOF {type}| result: success')
-        return results       
-        
+            if all(self.eofs.values()):
+                self.write_eof()
+
+        return results
+
     def __handle_signal(self, signum, frame):
         logging.debug(f'action: stop_handler | result: in_progress | signal {signum}')
         self.middleware.stop()
