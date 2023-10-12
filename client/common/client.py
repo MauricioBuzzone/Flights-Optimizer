@@ -1,9 +1,8 @@
 import socket
 import logging
-import csv
 import re
 import os
-
+import signal
 import time
 
 from model.flight import Flight
@@ -32,19 +31,28 @@ class Client:
         self.results_file = config_params["results_path"]
         self.query_sizes = {'Q1':0, 'Q2':0, 'Q3':0, 'Q4':0}
 
+        signal.signal(signal.SIGTERM, self.__handle_signal)
+        self.signal_received = False
+
     def run(self):
         # Read airports.csv and send to the system.
         self.connect(self.config["ip"], self.config["port"])
         self.send_airports()
+        if self.signal_received:
+            return
 
         # Read flights.csv and send to the system.
         self.send_flights()
+        if self.signal_received:
+            return
         self.disconnect()
 
         # poll results
         self.connect(self.config["results_ip"], self.config["results_port"])
         logging.info('action: poll_results | result: in_progress')
         self.poll_results()
+        if self.signal_received:
+            return
         logging.info('action: poll_results | result: success | nQ1: {} | nQ2: {} | nQ3: {} | nQ4: {}'.format(
             self.query_sizes['Q1'], self.query_sizes['Q2'], self.query_sizes['Q3'], self.query_sizes['Q4']
         ))
@@ -67,26 +75,32 @@ class Client:
                 file.write('\n')
                 self.query_sizes[result[:2]] += 1
                 logging.info(f'result: {result}')
-
     def poll_results(self):
-        keep_running = True
-        t_sleep = MIN_TIME_SLEEP
-        while keep_running:
-            logging.debug('action: polling | result: in_progress')
-            t, value = self.protocolHandler.poll_results()
-            if self.protocolHandler.is_result_wait(t):
-                logging.debug(f'action: polling | result: wait')
-                time.sleep(t_sleep)
-                t_sleep = min(TIME_SLEEP_SCALE*t_sleep, MAX_TIME_SLEEP)
-            elif self.protocolHandler.is_result_eof(t):
-                logging.debug(f'action: polling | result: eof')
-                keep_running = False
-            elif self.protocolHandler.is_results(t):
-                logging.debug(f'action: polling | result: succes | len(results): {len(value)}')
-                t_sleep = max(t_sleep/TIME_SLEEP_SCALE, MIN_TIME_SLEEP)
-                self.save_results(value)
-            else:
-                logging.error(f'action: polling | result: fail | unknown_type: {t}')
+        try:
+            keep_running = True
+            t_sleep = MIN_TIME_SLEEP
+            while keep_running:
+                logging.debug('action: polling | result: in_progress')
+                t, value = self.protocolHandler.poll_results()
+                if self.protocolHandler.is_result_wait(t):
+                    logging.debug(f'action: polling | result: wait')
+                    time.sleep(t_sleep)
+                    t_sleep = min(TIME_SLEEP_SCALE*t_sleep, MAX_TIME_SLEEP)
+                elif self.protocolHandler.is_result_eof(t):
+                    logging.debug(f'action: polling | result: eof')
+                    keep_running = False
+                elif self.protocolHandler.is_results(t):
+                    logging.debug(f'action: polling | result: succes | len(results): {len(value)}')
+                    t_sleep = max(t_sleep/TIME_SLEEP_SCALE, MIN_TIME_SLEEP)
+                    self.save_results(value)
+                else:
+                    logging.error(f'action: polling | result: fail | unknown_type: {t}')
+        except (SocketBroken, OSError) as e:
+            if not self.signal_received:
+                logging.error(f'action: polling | result: fail | error: {e}')
+        else: 
+            logging.debug(f'action: polling | result: success')
+
 
     def send_flights(self):
         self.send_file(self.flight_path,
@@ -132,10 +146,16 @@ class Client:
                     ))
                 send_eof()
         except (SocketBroken,OSError) as e:
-            logging.error(f'action: send file | result: fail | error: {e}')
-        else: 
+            if not self.signal_received:
+                logging.error(f'action: send file | result: fail | error: {e}')
+        else:
             logging.info(f'action: send file | result: success | path: {path}')
 
+    def __handle_signal(self, signum, frame):
+        logging.debug(f'action: stop_client | result: in_progress | signal {signum}')
+        self.disconnect()
+        self.signal_received = True
+        logging.debug(f'action: stop_client | result: success')
 
 def parser_airport(line):
     return Airport(cod=line[AIRPORT_COD], 
@@ -169,13 +189,5 @@ def get_duration(s):
         minutos = int(match.group(3)) if match.group(3) else 0
     
         return horas + dias*24, minutos
-    else:
-        return None
-    
-    ## Revisar si agregamos el dia a Duration
-    if match:
-        horas = int(match.group(1)) if match.group(1) else 0
-        minutos = int(match.group(2)) if match.group(2) else 0
-        return horas, minutos
     else:
         return None
