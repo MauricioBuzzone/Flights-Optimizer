@@ -3,6 +3,8 @@ Sistemas Distribuidos I (75.74):  TP Escalabilidad: Middleware y Coordinación d
 
 ## Cómo correr el programa
 
+**IMPORTANTE**: No se subió el archivo de 2M de líneas. En caso de querer utilizarlo [descargarlo](https://kaggle.com/datasets/pablodroca/flight-prices-2M) y configurar el cliente para enviarlo (por defecto envía el de 2 millones de líneas).
+
 ### Paso 1) System Config
 Para cambiar la configuración del sistema (cantidad de workers, logging) se tiene un archivo de configuración `config.py` con el siguiente formato:
 
