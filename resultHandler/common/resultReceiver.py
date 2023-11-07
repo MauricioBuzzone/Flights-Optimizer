@@ -32,8 +32,7 @@ class ResultReceiver():
     def save_results(self, results_raw, results_type):
         results = self.deserialize_result(results_raw, results_type)
 
-        self.file_lock.acquire()
-        with open(self.file_name, 'a', encoding='UTF8') as file:
+        with self.file_lock, open(self.file_name, 'a', encoding='UTF8') as file:
             writer = csv.writer(file)
 
             for result in results:
@@ -56,14 +55,11 @@ class ResultReceiver():
                     writer.writerow(['Q4', journey, result.fare_avg, result.fare_max])
                 else:
                     continue
-        self.file_lock.release()
 
     def write_eof(self):
-        self.file_lock.acquire()
-        with open(self.file_name, 'a', encoding='UTF8') as file:
+        with self.file_lock, open(self.file_name, 'a', encoding='UTF8') as file:
             writer = csv.writer(file)
             writer.writerow(['EOF'])
-        self.file_lock.release()
     
     def deserialize_result(self, bytes_raw, type):
         reader = io.BytesIO(bytes_raw)

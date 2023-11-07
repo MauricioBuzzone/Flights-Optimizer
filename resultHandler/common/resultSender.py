@@ -42,8 +42,7 @@ class ResultSender():
             return []
 
         chunk = []
-        self.file_lock.acquire()
-        with open(self.file_name, 'r', encoding='UTF8') as file:
+        with self.file_lock, open(self.file_name, 'r', encoding='UTF8') as file:
             file.seek(self.cursor)
             while line := file.readline():
                 logging.debug(f'action: read_line | line: {line}')
@@ -55,8 +54,6 @@ class ResultSender():
                 if len(chunk) >= self.chunk_size:
                     break
             self.cursor = file.tell()
-
-        self.file_lock.release()
         return chunk
 
     def run(self):
