@@ -28,7 +28,6 @@ class ResultReceiver():
         logging.debug(f'action: listen_results | result: success')
 
         self.middleware.start()
-        self.middleware.stop()
 
     def save_results(self, results_raw, results_type):
         results = self.deserialize_result(results_raw, results_type)
