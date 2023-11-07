@@ -11,7 +11,7 @@ from utils.protocol import is_eof
 from common.resultHandlerMiddleware import ResultHandlerMiddleware
 
 class ResultReceiver():
-    def __init__(self, file_lock):
+    def __init__(self, file_name, file_lock):
         signal.signal(signal.SIGTERM, self.__handle_signal)
         self.serializers = {'Q1': FlightQ1Serializer(),
                             'Q2': FlightQ2Serializer(),
@@ -20,6 +20,7 @@ class ResultReceiver():
         self.eofs = {'Q1': False, 'Q2': False, 'Q3': False, 'Q4': False}
         self.middleware = ResultHandlerMiddleware()
         self.file_lock = file_lock
+        self.file_name = file_name
 
     def run(self):
         logging.debug(f'action: listen_results | result: in_progress')
@@ -33,7 +34,7 @@ class ResultReceiver():
         results = self.deserialize_result(results_raw, results_type)
 
         self.file_lock.acquire()
-        with open(f'results.csv', 'a', encoding='UTF8') as file:
+        with open(self.file_name, 'a', encoding='UTF8') as file:
             writer = csv.writer(file)
 
             for result in results:
@@ -60,7 +61,7 @@ class ResultReceiver():
 
     def write_eof(self):
         self.file_lock.acquire()
-        with open(f'results.csv', 'a', encoding='UTF8') as file:
+        with open(self.file_name, 'a', encoding='UTF8') as file:
             writer = csv.writer(file)
             writer.writerow(['EOF'])
         self.file_lock.release()

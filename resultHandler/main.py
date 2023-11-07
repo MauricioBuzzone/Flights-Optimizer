@@ -1,7 +1,5 @@
-from multiprocessing import Process, Lock
 from configparser import ConfigParser
-from common.resultReceiver import ResultReceiver
-from common.resultSender import ResultSender
+from common.resultHandler import ResultHandler
 import logging
 import os
 
@@ -25,7 +23,7 @@ def initialize_config():
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["ip"] = os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"])
-
+        config_params["file_name"] = os.getenv('FILE_NAME', config["DEFAULT"]["FILE_NAME"])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -44,18 +42,13 @@ def main():
     # of the component
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
-    # Initialize server and start server loop
-    lock = Lock()
-    resultReceiver = ResultReceiver(lock)
-    resultSender = ResultSender(config_params, lock)
 
     # creating the file
-    open('results.csv', "w").close()
+    open(config_params['file_name'], "w").close()
 
-    p1 = Process(target=resultReceiver.run, args=())
-    p2 = Process(target=resultSender.run, args=())
-    p1.start(); p2.start()
-    p1.join() ; p2.join()
+    # start server loop
+    handler = ResultHandler(config_params)
+    handler.run()
 
 def initialize_log(logging_level):
     """

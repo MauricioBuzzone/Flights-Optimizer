@@ -10,14 +10,13 @@ from utils.protocol import make_eof, make_wait, TlvTypes
 EOF_LINE = "EOF"
 
 class ResultSender():
-    def __init__(self, config_params, file_lock):
-        self.config_params = config_params
+    def __init__(self, ip, port, file_name, file_lock):
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._server_socket.bind(('', config_params['port']))
+        self._server_socket.bind((ip, port))
         self._server_socket.listen(1)
         self._server_on = True
 
-        self.file_name = 'results.csv'
+        self.file_name = file_name
         self.file_lock = file_lock
         self.chunk_size = 10
         self.serializer = LineSerializer()
