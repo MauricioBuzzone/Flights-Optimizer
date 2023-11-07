@@ -61,14 +61,14 @@ class ClientHandler:
             while keep_reading:
                 t, value = protocolHandler.read()
 
-                if protocolHandler.is_airport_eof(t):
+                if protocolHandler.is_flights(t):
+                    keep_reading = self.__handle_flights(value)
+                elif protocolHandler.is_airports(t):
+                    keep_reading = self.__handle_airports(value)
+                elif protocolHandler.is_airport_eof(t):
                     keep_reading = self.__handle_airport_eof()
                 elif protocolHandler.is_flight_eof(t):
                     keep_reading = self.__handle_flight_eof()
-                elif protocolHandler.is_airports(t):
-                    keep_reading = self.__handle_airports(value)
-                elif protocolHandler.is_flights(t):
-                    keep_reading = self.__handle_flights(value)
 
                 protocolHandler.ack()
         
