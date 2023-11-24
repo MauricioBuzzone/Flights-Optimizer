@@ -2,7 +2,7 @@ import logging
 import io
 
 from utils.listener import Listener
-from utils.protocol import get_closed_peers, make_eof
+from utils.protocol import get_closed_peers, make_eof, generate_idempotency_key
 
 class Worker(Listener):
     def __init__(self, middleware, in_serializer, out_serializer, peers, chunk_size):
@@ -21,12 +21,12 @@ class Worker(Listener):
 
     def recv_raw(self, raw):
         reader = io.BytesIO(raw)
-        input_chunk = self.in_serializer.from_chunk(reader)
+        idempotency_key, input_chunk = self.in_serializer.from_chunk(reader)
         logging.debug(f'action: new_chunk | chunck_len: {len(input_chunk)}')
 
         for input in input_chunk:
-            self.work(input)
-        self.do_after_work()
+            self.work(input, idempotency_key)
+        self.do_after_work(idempotency_key)
 
     def recv_eof(self, eof):
         self.send_results()
@@ -38,11 +38,13 @@ class Worker(Listener):
             logging.debug(f'action: publish_result | value: {result}')
             chunk.append(result)
             if len(chunk) >= self.chunk_size:
-                data = self.out_serializer.to_bytes(chunk)
+                idempotency_key = generate_idempotency_key()
+                data = self.out_serializer.to_bytes(chunk, idempotency_key)
                 self.middleware.publish(data)
                 chunk = []
         if chunk:
-            data = self.out_serializer.to_bytes(chunk)
+            idempotency_key = generate_idempotency_key()
+            data = self.out_serializer.to_bytes(chunk, idempotency_key)
             self.middleware.publish(data)
 
     def handle_eof(self, eof):

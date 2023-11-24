@@ -3,7 +3,7 @@ from utils.protocol import TlvTypes, SIZE_LENGTH
 from utils.protocol import integer_to_bytes, integer_from_bytes
 from utils.protocol import string_to_bytes, string_from_bytes
 from utils.protocol import float_to_bytes, float_from_bytes
-from utils.protocol import code_to_bytes
+from utils.protocol import code_to_bytes, idempotency_key_to_bytes
 from model.flight import Flight
 from model.duration import Duration
 
@@ -39,7 +39,7 @@ class FlightQ1Serializer(Serializer):
             total_distance=0,
         )
 
-    def to_bytes(self, chunk: list):
+    def to_bytes(self, chunk: list, idempotency_key):
         raw_chunk = b''
 
         for flight in chunk:
@@ -59,6 +59,9 @@ class FlightQ1Serializer(Serializer):
 
         result = code_to_bytes(TlvTypes.FLIGHT_CHUNK)
         result += int.to_bytes(len(chunk), SIZE_LENGTH, 'big') 
+
+        result += idempotency_key_to_bytes(idempotency_key, TlvTypes.UUID)
+
         result += raw_chunk
 
         return result

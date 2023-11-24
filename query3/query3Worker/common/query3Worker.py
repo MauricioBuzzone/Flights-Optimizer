@@ -16,7 +16,7 @@ class Query3Worker(Worker):
                          peers=peers,
                          chunk_size=chunk_size)
 
-    def work(self, input):
+    def work(self, input, idempotency_key):
         flight = input
         journey = (flight.origin, flight.destiny)
         if journey in self.results:

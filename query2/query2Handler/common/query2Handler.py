@@ -18,7 +18,7 @@ class Query2Handler(Worker):
         self.distance_rate = distance_rate
         self.filtered_flights = []
 
-    def work(self, input):
+    def work(self, input, idempotency_key):
         flight = input
         if not (flight.origin in self.airports):
             logging.error(f'action: Q2 filter | result: origin({flight.origin}) not in database')
@@ -32,8 +32,8 @@ class Query2Handler(Worker):
             logging.debug(f'action: publish_flight | value: {flight}')
             self.filtered_flights.append(flight)
 
-    def do_after_work(self):
+    def do_after_work(self, idempotency_key):
         if self.filtered_flights:
-            data = self.out_serializer.to_bytes(self.filtered_flights)
+            data = self.out_serializer.to_bytes(self.filtered_flights, idempotency_key)
             self.middleware.publish(data)
         self.filtered_flights = []

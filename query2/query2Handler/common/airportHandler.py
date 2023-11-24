@@ -14,7 +14,7 @@ class AirportHandler(Worker):
                          chunk_size=0)
         self.airports = airports
 
-    def work(self, input):
+    def work(self, input, idempotency_key):
         airport = input
         self.airports[airport.cod] = (airport.latitude, airport.longitude)
 

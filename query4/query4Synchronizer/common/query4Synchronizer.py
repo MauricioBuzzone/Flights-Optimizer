@@ -15,7 +15,7 @@ class Query4Synchronizer(Worker):
                          peers=1,
                          chunk_size=chunk_size)
 
-    def work(self, input):
+    def work(self, input, idempotency_key):
         result = input
         journey = (result.origin, result.destiny)
         if journey in self.results:

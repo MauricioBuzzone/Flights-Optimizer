@@ -59,12 +59,12 @@ class ClientHandler:
             protocolHandler = ProtocolHandler(client_sock)
             keep_reading = True
             while keep_reading:
-                t, value = protocolHandler.read()
+                t, ik_value = protocolHandler.read()
 
                 if protocolHandler.is_flights(t):
-                    keep_reading = self.__handle_flights(value)
+                    keep_reading = self.__handle_flights(ik_value[0], ik_value[1])
                 elif protocolHandler.is_airports(t):
-                    keep_reading = self.__handle_airports(value)
+                    keep_reading = self.__handle_airports(ik_value[0], ik_value[1])
                 elif protocolHandler.is_airport_eof(t):
                     keep_reading = self.__handle_airport_eof()
                 elif protocolHandler.is_flight_eof(t):
@@ -81,17 +81,21 @@ class ClientHandler:
                 logging.debug(f'action: finishing | result: success')
 
     def __handle_airport_eof(self):
+        logging.debug(f'action: read airport_eof | result: success')
+
         eof = make_eof()
         self.middleware.send_airport(eof)
 
         logging.debug(f'action: send_airports | value: EOF | result: success')
         return True
 
-    def __handle_airports(self, value):
-        data = self.airport_serializer.to_bytes(value)
+    def __handle_airports(self, idempotency_key, airports):
+        logging.debug(f'action: recived airports[id={idempotency_key}] | result: success | N: {len(airports)}')
+
+        data = self.airport_serializer.to_bytes(airports, idempotency_key)
         self.middleware.send_airport(data)
 
-        logging.debug(f'action: send_airports | len(value): {len(value)} | result: success')
+        logging.debug(f'action: send_airports | result: success | N: {len(airports)}')
         return True
 
     def __handle_flight_eof(self):
@@ -100,21 +104,21 @@ class ClientHandler:
         self.middleware.send_eof(eof)
         return False
         
-    def __handle_flights(self, flights):
+    def __handle_flights(self, idempotency_key, flights):
         #  It's responsible for separating the relevant 
         #  fields for each query and sending them to different queues.
-        logging.debug(f'action: recived flights | result: success | N: {len(flights)}')
+        logging.debug(f'action: recived flights[id={idempotency_key}] | result: success | N: {len(flights)}')
 
         # Q1:
-        data = self.flight_q1_serializer.to_bytes(flights)
+        data = self.flight_q1_serializer.to_bytes(flights, idempotency_key)
         self.middleware.send_flightsQ1(data)
 
         # Q2:
-        data = self.flight_q2_serializer.to_bytes(flights)
+        data = self.flight_q2_serializer.to_bytes(flights, idempotency_key)
         self.middleware.send_flightsQ2(data)
 
         # Q4:
-        data = self.flight_q4_serializer.to_bytes(flights)
+        data = self.flight_q4_serializer.to_bytes(flights, idempotency_key)
         self.middleware.send_flightsQ4(data)
 
         return True

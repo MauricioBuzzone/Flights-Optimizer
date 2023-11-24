@@ -5,6 +5,7 @@ from utils.worker import Worker
 from model.flight import Flight
 from model.duration import Duration
 from utils.serializer.flightQ4Serializer import FlightQ4Serializer
+from utils.protocol import generate_idempotency_key
 
 class Query4Handler(Worker):
     def __init__(self, chunk_size):
@@ -20,7 +21,7 @@ class Query4Handler(Worker):
         self.avg = 0
         self.n = 0
 
-    def work(self, input):
+    def work(self, input, idempotency_key):
         flight = input
         self.avg = (self.avg*self.n + flight.total_fare) / (self.n+1)
         # ¿A disco?
@@ -36,11 +37,13 @@ class Query4Handler(Worker):
                                 total_fare=total_fare, legs=[], flight_duration=Duration(0,0))
                 chunk.append(flight)
                 if len(chunk) >= self.chunk_size:
-                    logging.debug(f'action: publishing_chunk | len(chunk): {len(chunk)}')
-                    data = self.out_serializer.to_bytes(chunk)
+                    idempotency_key = generate_idempotency_key()
+                    logging.debug(f'action: publishing_chunk[{idempotency_key}] | len(chunk): {len(chunk)}')
+                    data = self.out_serializer.to_bytes(chunk, idempotency_key)
                     self.middleware.publish(data)
                     chunk = []
         if chunk:
-            logging.debug(f'action: publishing_chunk | len(chunk): {len(chunk)}')
-            data = self.out_serializer.to_bytes(chunk)
+            idempotency_key = generate_idempotency_key()
+            logging.debug(f'action: publishing_chunk[{idempotency_key}] | len(chunk): {len(chunk)}')
+            data = self.out_serializer.to_bytes(chunk, idempotency_key)
             self.middleware.publish(data)

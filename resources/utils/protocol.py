@@ -1,4 +1,5 @@
 import struct
+import uuid
 
 SIZE_LENGTH = 4
 
@@ -14,6 +15,7 @@ class TlvTypes():
 
     # types
     EOF = next()
+    UUID = next()
     WAIT = next()
     POLL = next()
     
@@ -88,6 +90,9 @@ def make_eof(i = 0):
     bytes += int.to_bytes(i, SIZE_LENGTH, 'big')
     return bytes
 
+def generate_idempotency_key():
+    return uuid.uuid4()
+
 def code_to_bytes(code: int):
     return int.to_bytes(code, TlvTypes.SIZE_CODE_MSG, 'big')
 
@@ -119,6 +124,16 @@ def float_to_bytes(f:float, code: int):
 
 def float_from_bytes(bytes_f):
     return struct.unpack('!f', bytes_f)[0]
+
+def idempotency_key_to_bytes(ik, code: int):
+    bytes = code_to_bytes(code)
+    bytes_ik = ik.bytes
+    bytes += int.to_bytes(len(bytes_ik), SIZE_LENGTH, 'big')
+    bytes += bytes_ik
+    return bytes
+
+def idempotency_key_from_bytes(bytes_ik):
+    return uuid.UUID(bytes=bytes_ik)
 
 class UnexpectedType(Exception):
     pass

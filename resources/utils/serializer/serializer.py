@@ -1,5 +1,7 @@
 from utils.protocol import TlvTypes, SIZE_LENGTH
 from utils.protocol import integer_from_bytes
+from utils.protocol import idempotency_key_from_bytes
+import uuid
 
 class Serializer:
     def read_t(self, reader):
@@ -19,13 +21,19 @@ class Serializer:
         if header:
             _, n_chunks = self.read_tl(reader)
         
+        # Getting the idempotency_key 
+        # _tlv_type should be TlvTypes.UUID, _tlv_len should be 16 bytes
+        _tlv_type, _tlv_len = self.read_tl(reader)
+        raw_idempotency_key = reader.read(_tlv_len)
+        idempotency_key = idempotency_key_from_bytes(raw_idempotency_key)
+
         _list = []
         for i in range(n_chunks):
             _tlv_type, tlv_len = self.read_tl(reader)
             obj = self.from_bytes(reader, tlv_len)
             _list.append(obj)
 
-        return _list
+        return idempotency_key, _list
 
     def from_bytes(self, reader, obj_length):
         raw_dict = self.make_raw_dict()
@@ -55,5 +63,5 @@ class Serializer:
     def from_raw_dict(self, raw_dict):
         raise RuntimeError("Must be redefined")
 
-    def to_bytes(self, chunk: list):
+    def to_bytes(self, chunk: list, idempotency_key):
         raise RuntimeError("Must be redefined")

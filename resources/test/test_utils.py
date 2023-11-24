@@ -9,6 +9,8 @@ from model.duration import Duration
 from utils.serializer.flightSerializer import FlightSerializer
 from utils.serializer.airportSerializer import AirportSerializer
 
+from utils.protocol import generate_idempotency_key
+
 class TestUtils(unittest.TestCase):
     def test_serializer_can_packet_two_airport_in_the_same_mesagge(self):
         serializer = AirportSerializer()
@@ -25,12 +27,16 @@ class TestUtils(unittest.TestCase):
             longitude=12,
         )
 
-        chunk = serializer.to_bytes([airport1, airport2])
+        ik = generate_idempotency_key()
+
+        chunk = serializer.to_bytes([airport1, airport2], ik)
         reader = io.BytesIO(chunk)
-        serial = serializer.from_chunk(reader)
+        _ik, serial = serializer.from_chunk(reader)
 
         _airport1 = serial[0]
         _airport2 = serial[1]
+
+        assert ik.hex == _ik.hex
 
         assert airport1.cod == _airport1.cod
         assert abs(airport1.latitude-_airport1.latitude) < 1e-4
@@ -69,12 +75,16 @@ class TestUtils(unittest.TestCase):
             ),
         )
 
-        chunk = serializer.to_bytes([flight1, flight2])
+        ik = generate_idempotency_key()
+
+        chunk = serializer.to_bytes([flight1, flight2], ik)
         reader = io.BytesIO(chunk)
-        serial = serializer.from_chunk(reader)
+        _ik, serial = serializer.from_chunk(reader)
 
         _flight1 = serial[0]
         _flight2 = serial[1]
+
+        assert ik.hex == _ik.hex
 
         assert flight1.id == _flight1.id
         assert flight1.origin == _flight1.origin

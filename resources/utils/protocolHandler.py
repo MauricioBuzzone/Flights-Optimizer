@@ -1,7 +1,7 @@
 import struct
-
+import uuid
 from utils.TCPHandler import TCPHandler
-from utils.protocol import TlvTypes, UnexpectedType, SIZE_LENGTH, is_eof, make_eof
+from utils.protocol import TlvTypes, UnexpectedType, SIZE_LENGTH, is_eof, make_eof, generate_idempotency_key
 from utils.serializer.airportSerializer import AirportSerializer
 from utils.serializer.flightSerializer import FlightSerializer
 from utils.serializer.lineSerializer import LineSerializer
@@ -39,13 +39,15 @@ class ProtocolHandler:
         self.wait_confimation()
 
     def send_airport(self, airports):
-        bytes = self.airport_serializer.to_bytes(airports)
+        idempotency_key = generate_idempotency_key()
+        bytes = self.airport_serializer.to_bytes(airports, idempotency_key)
         result = self.TCPHandler.send_all(bytes)
         assert result == len(bytes), f'Cannot send all bytes {result} != {len(bytes)}'
         self.wait_confimation()
 
     def send_flight(self, flights):
-        bytes = self.flight_serializer.to_bytes(flights)
+        idempotency_key = generate_idempotency_key()
+        bytes = self.flight_serializer.to_bytes(flights, idempotency_key)
         result = self.TCPHandler.send_all(bytes)
         assert result == len(bytes), f'Cannot send all bytes {result} != {len(bytes)}'
         self.wait_confimation()
