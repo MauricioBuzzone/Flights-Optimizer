@@ -62,13 +62,15 @@ class ResultReceiver():
             writer.writerow(['EOF'])
     
     def deserialize_result(self, bytes_raw, type):
-        reader = io.BytesIO(bytes_raw)
-        idempotency_key, results = self.serializers[type].from_chunk(reader)        
         if is_eof(bytes_raw):
             self.eofs[type] = True
             logging.debug(f'action: recv EOF {type}| result: success')
             if all(self.eofs.values()):
                 self.write_eof()
+            return []
+
+        reader = io.BytesIO(bytes_raw)
+        idempotency_key, results = self.serializers[type].from_chunk(reader)
 
         return results
 

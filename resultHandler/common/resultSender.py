@@ -5,7 +5,7 @@ import csv
 from utils.TCPHandler import SocketBroken, TCPHandler
 from utils.protocolHandler import ProtocolHandler
 from utils.serializer.lineSerializer import LineSerializer
-from utils.protocol import make_eof, make_wait, TlvTypes
+from utils.protocol import make_eof, make_wait, TlvTypes, generate_idempotency_key
 
 EOF_LINE = "EOF"
 
@@ -26,7 +26,8 @@ class ResultSender():
 
     def respond(self, tcpHandler, chunk):
         if chunk:
-            data = self.serializer.to_bytes(chunk)
+            ik = generate_idempotency_key()
+            data = self.serializer.to_bytes(chunk, ik)
         else:
             if self.eof_readed:
                 logging.debug('action: respond | response: EOF')

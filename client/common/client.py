@@ -81,7 +81,7 @@ class Client:
             t_sleep = MIN_TIME_SLEEP
             while keep_running:
                 logging.debug('action: polling | result: in_progress')
-                t, value = self.protocolHandler.poll_results()
+                t, ik_value = self.protocolHandler.poll_results()
                 if self.protocolHandler.is_result_wait(t):
                     logging.debug(f'action: polling | result: wait')
                     time.sleep(t_sleep)
@@ -90,6 +90,7 @@ class Client:
                     logging.debug(f'action: polling | result: eof')
                     keep_running = False
                 elif self.protocolHandler.is_results(t):
+                    idempotency_key, value = ik_value
                     logging.debug(f'action: polling | result: succes | len(results): {len(value)}')
                     t_sleep = max(t_sleep/TIME_SLEEP_SCALE, MIN_TIME_SLEEP)
                     self.save_results(value)
