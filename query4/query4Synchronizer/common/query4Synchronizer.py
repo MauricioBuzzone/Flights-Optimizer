@@ -13,6 +13,7 @@ class Query4Synchronizer(Worker):
                          in_serializer=in_serializer,
                          out_serializer=out_serializer,
                          peers=1,
+                         worker_id=1,
                          chunk_size=chunk_size)
 
     def work(self, input, idempotency_key):

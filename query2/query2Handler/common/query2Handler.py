@@ -6,7 +6,7 @@ from utils.chunk import Chunk
 from geopy.distance import geodesic
 
 class Query2Handler(Worker):
-    def __init__(self, airports: list, peers: int, chunk_size: int, distance_rate: float):
+    def __init__(self, airports: list, peers: int, worker_id:int, chunk_size: int, distance_rate: float):
         middleware = MiddlewareQE(in_queue_name='Q2-flights',
                                   exchange='results',
                                   tag='Q2')
@@ -14,6 +14,7 @@ class Query2Handler(Worker):
                          in_serializer=FlightQ2Serializer(),
                          out_serializer=FlightQ2Serializer(),
                          peers=peers,
+                         worker_id=worker_id,
                          chunk_size=chunk_size)
         self.airports = airports
         self.distance_rate = distance_rate

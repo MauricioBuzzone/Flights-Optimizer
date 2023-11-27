@@ -10,7 +10,8 @@ class AirportHandler(Worker):
         super().__init__(middleware=middleware,
                          in_serializer=AirportSerializer(),
                          out_serializer=None,
-                         peers=0,
+                         peers=1,
+                         worker_id=1,
                          chunk_size=0)
         self.airports = airports
 

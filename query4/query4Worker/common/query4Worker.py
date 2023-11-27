@@ -5,7 +5,7 @@ from utils.serializer.resultQ4Serializer import ResultQ4Serializer
 from utils.result.resultQ4 import ResultQ4
 
 class Query4Worker(Worker):
-    def __init__(self, peers, chunk_size):
+    def __init__(self, peers, worker_id, chunk_size):
         in_serializer = FlightQ4Serializer()
         out_serializer = ResultQ4Serializer()
         middleware = MiddlewareQQ(in_queue_name='Q4-workers',
@@ -14,6 +14,7 @@ class Query4Worker(Worker):
                          in_serializer=in_serializer,
                          out_serializer=out_serializer,
                          peers=peers,
+                         worker_id=worker_id,
                          chunk_size=chunk_size)
 
     def work(self, input, idempotency_key):

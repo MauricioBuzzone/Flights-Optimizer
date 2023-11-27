@@ -26,6 +26,7 @@ def initialize_config():
         config_params["chunk_size"] = int(os.getenv('CHUNK_SIZE', config["DEFAULT"]["CHUNK_SIZE"]))
         config_params["distance_rate"] = float(os.getenv('DISTANCE_RATE', config["DEFAULT"]["DISTANCE_RATE"]))
         config_params["peers"] = int(os.environ['PEERS'])
+        config_params["worker_id"] = int(os.environ['WORKER_ID'])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -39,6 +40,7 @@ def main():
     peers = config_params["peers"]
     chunk_size = config_params["chunk_size"]
     distance_rate = config_params["distance_rate"]
+    worker_id = config_params["worker_id"]
 
     initialize_log(logging_level)
 
@@ -51,7 +53,7 @@ def main():
     airportHandler = AirportHandler(airports)
     airportHandler.run()
 
-    flightHandler = Query2Handler(airports, peers, chunk_size, distance_rate)
+    flightHandler = Query2Handler(airports, peers, worker_id, chunk_size, distance_rate)
     flightHandler.run()
 
 def initialize_log(logging_level):

@@ -67,6 +67,7 @@ def create_query1Handler(i):
         'environment': [
             'PYTHONUNBUFFERED=1',
             f'LOGGING_LEVEL={LOGGING_LEVEL}',
+            f'WORKER_ID={i}',
             'PEERS='+str(AMOUNT_OF_QUERY1_HANDLER),
         ],
         'volumes': [
@@ -88,6 +89,7 @@ def create_airportHandler(i):
         'environment': [
             'PYTHONUNBUFFERED=1',
             f'LOGGING_LEVEL={LOGGING_LEVEL}',
+            f'WORKER_ID={i}',
             'PEERS='+str(AMOUNT_OF_AIRPORT_HANDLER),
         ],
         'volumes': [
@@ -127,6 +129,7 @@ def create_query3Worker(i):
         'environment': [
             'PYTHONUNBUFFERED=1',
             f'LOGGING_LEVEL={LOGGING_LEVEL}',
+            f'WORKER_ID={i}',
             'PEERS='+str(AMOUNT_OF_QUERY3_WORKERS),
         ],
         'volumes': [
@@ -186,6 +189,7 @@ def create_query4Worker(i):
         'environment': [
             'PYTHONUNBUFFERED=1',
             f'LOGGING_LEVEL={LOGGING_LEVEL}',
+            f'WORKER_ID={i}',
             'PEERS='+str(AMOUNT_OF_QUERY4_WORKERS),
         ],
         'volumes': [

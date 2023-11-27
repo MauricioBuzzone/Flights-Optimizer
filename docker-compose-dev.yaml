@@ -15,6 +15,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=ERROR
+    - WORKER_ID=1
     - PEERS=3
     image: query2_handler:latest
     networks:
@@ -29,6 +30,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=ERROR
+    - WORKER_ID=2
     - PEERS=3
     image: query2_handler:latest
     networks:
@@ -43,6 +45,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=ERROR
+    - WORKER_ID=3
     - PEERS=3
     image: query2_handler:latest
     networks:
@@ -76,7 +79,7 @@ services:
     entrypoint: python3 /main.py
     environment:
     - PYTHONUNBUFFERED=1
-    - LOGGING_LEVEL=INFO
+    - LOGGING_LEVEL=ERROR
     image: client_handler:latest
     networks:
     - middleware_testing_net
@@ -90,6 +93,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=ERROR
+    - WORKER_ID=1
     - PEERS=1
     image: query1_handler:latest
     networks:
@@ -131,6 +135,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=ERROR
+    - WORKER_ID=1
     - PEERS=2
     image: query3_worker:latest
     networks:
@@ -145,6 +150,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=ERROR
+    - WORKER_ID=2
     - PEERS=2
     image: query3_worker:latest
     networks:
@@ -187,6 +193,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=ERROR
+    - WORKER_ID=1
     - PEERS=3
     image: query4_worker:latest
     networks:
@@ -201,6 +208,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=ERROR
+    - WORKER_ID=2
     - PEERS=3
     image: query4_worker:latest
     networks:
@@ -215,6 +223,7 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - LOGGING_LEVEL=ERROR
+    - WORKER_ID=3
     - PEERS=3
     image: query4_worker:latest
     networks:

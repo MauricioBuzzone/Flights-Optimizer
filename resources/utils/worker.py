@@ -6,12 +6,13 @@ from utils.chunk import Chunk
 from utils.protocol import get_closed_peers, make_eof, generate_idempotency_key
 
 class Worker(Listener):
-    def __init__(self, middleware, in_serializer, out_serializer, peers, chunk_size):
+    def __init__(self, middleware, in_serializer, out_serializer, peers, worker_id, chunk_size):
         super().__init__(middleware)
         self.results = {}
         self.in_serializer = in_serializer
         self.out_serializer = out_serializer
         self.peers = peers
+        self.worker_id = worker_id
         self.chunk_size = chunk_size
 
     def do_after_work(self, idempotency_key):

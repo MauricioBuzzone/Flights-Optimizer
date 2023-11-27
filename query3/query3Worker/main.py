@@ -23,6 +23,7 @@ def initialize_config():
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["chunk_size"] = int(os.getenv('CHUNK_SIZE', config["DEFAULT"]["CHUNK_SIZE"]))
         config_params["peers"] = int(os.environ['PEERS'])
+        config_params["worker_id"] = int(os.environ['WORKER_ID'])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -36,15 +37,16 @@ def main():
     logging_level = config_params["logging_level"]
     chunk_size = config_params["chunk_size"]
     peers = config_params["peers"]
+    worker_id = config_params["worker_id"]
 
     initialize_log(logging_level)
 
     # Log config parameters at the beginning of the program to verify the configuration
     # of the component
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
-    
+
     # Initialize server and start server loop
-    queryWorker = Query3Worker(peers, chunk_size)
+    queryWorker = Query3Worker(peers, worker_id, chunk_size)
     queryWorker.run()
 
 

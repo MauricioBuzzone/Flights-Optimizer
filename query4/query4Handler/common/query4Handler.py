@@ -16,6 +16,7 @@ class Query4Handler(Worker):
                          in_serializer=FlightQ4Serializer(),
                          out_serializer=FlightQ4Serializer(),
                          peers=1,
+                         worker_id=1,
                          chunk_size=chunk_size)
 
         self.flights_list = []
