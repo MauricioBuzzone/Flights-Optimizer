@@ -5,6 +5,7 @@ from utils.protocol import TlvTypes, UnexpectedType, SIZE_LENGTH, is_eof, make_e
 from utils.serializer.airportSerializer import AirportSerializer
 from utils.serializer.flightSerializer import FlightSerializer
 from utils.serializer.lineSerializer import LineSerializer
+from utils.chunk import Chunk
 
 class ProtocolHandler:
     def __init__(self, socket):
@@ -40,14 +41,16 @@ class ProtocolHandler:
 
     def send_airport(self, airports):
         idempotency_key = generate_idempotency_key()
-        bytes = self.airport_serializer.to_bytes(airports, idempotency_key)
+        _chunk = Chunk(id=idempotency_key, values=airports)
+        bytes = self.airport_serializer.to_bytes(_chunk)
         result = self.TCPHandler.send_all(bytes)
         assert result == len(bytes), f'Cannot send all bytes {result} != {len(bytes)}'
         self.wait_confimation()
 
     def send_flight(self, flights):
         idempotency_key = generate_idempotency_key()
-        bytes = self.flight_serializer.to_bytes(flights, idempotency_key)
+        _chunk = Chunk(id=idempotency_key, values=flights)
+        bytes = self.flight_serializer.to_bytes(_chunk)
         result = self.TCPHandler.send_all(bytes)
         assert result == len(bytes), f'Cannot send all bytes {result} != {len(bytes)}'
         self.wait_confimation()

@@ -2,6 +2,7 @@ import logging
 from utils.worker import Worker
 from middleware.middlewareQE import MiddlewareQE
 from utils.serializer.flightQ1Serializer import FlightQ1Serializer
+from utils.chunk import Chunk
 
 class Query1Handler(Worker):
     def __init__(self, peers, min_legs):
@@ -24,6 +25,7 @@ class Query1Handler(Worker):
 
     def do_after_work(self, idempotency_key):
         if self.filtered_flights:
-            data = self.out_serializer.to_bytes(self.filtered_flights, idempotency_key)
+            _chunk = Chunk(id=idempotency_key, values=self.filtered_flights)
+            data = self.out_serializer.to_bytes(_chunk)
             self.middleware.publish(data)
         self.filtered_flights = []

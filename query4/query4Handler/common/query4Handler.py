@@ -6,6 +6,7 @@ from model.flight import Flight
 from model.duration import Duration
 from utils.serializer.flightQ4Serializer import FlightQ4Serializer
 from utils.protocol import generate_idempotency_key
+from utils.chunk import Chunk
 
 class Query4Handler(Worker):
     def __init__(self, chunk_size):
@@ -38,12 +39,14 @@ class Query4Handler(Worker):
                 chunk.append(flight)
                 if len(chunk) >= self.chunk_size:
                     idempotency_key = generate_idempotency_key()
+                    _chunk = Chunk(id=idempotency_key, values=chunk)
+                    data = self.out_serializer.to_bytes(_chunk)
                     logging.debug(f'action: publishing_chunk[{idempotency_key}] | len(chunk): {len(chunk)}')
-                    data = self.out_serializer.to_bytes(chunk, idempotency_key)
                     self.middleware.publish(data)
                     chunk = []
         if chunk:
             idempotency_key = generate_idempotency_key()
+            _chunk = Chunk(id=idempotency_key, values=chunk)
+            data = self.out_serializer.to_bytes(_chunk)
             logging.debug(f'action: publishing_chunk[{idempotency_key}] | len(chunk): {len(chunk)}')
-            data = self.out_serializer.to_bytes(chunk, idempotency_key)
             self.middleware.publish(data)

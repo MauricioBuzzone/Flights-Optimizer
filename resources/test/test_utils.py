@@ -6,6 +6,8 @@ from model.flight import Flight
 from model.airport import Airport
 from model.duration import Duration
 
+from utils.chunk import Chunk
+
 from utils.serializer.flightSerializer import FlightSerializer
 from utils.serializer.airportSerializer import AirportSerializer
 
@@ -28,15 +30,16 @@ class TestUtils(unittest.TestCase):
         )
 
         ik = generate_idempotency_key()
+        chunk = Chunk(ik, [airport1, airport2])
 
-        chunk = serializer.to_bytes([airport1, airport2], ik)
-        reader = io.BytesIO(chunk)
-        _ik, serial = serializer.from_chunk(reader)
+        _chunk = serializer.to_bytes(chunk)
+        reader = io.BytesIO(_chunk)
+        chunk = serializer.from_chunk(reader)
 
-        _airport1 = serial[0]
-        _airport2 = serial[1]
+        _airport1 = chunk.values[0]
+        _airport2 = chunk.values[1]
 
-        assert ik.hex == _ik.hex
+        assert ik.hex == chunk.id.hex
 
         assert airport1.cod == _airport1.cod
         assert abs(airport1.latitude-_airport1.latitude) < 1e-4
@@ -76,15 +79,16 @@ class TestUtils(unittest.TestCase):
         )
 
         ik = generate_idempotency_key()
+        chunk = Chunk(ik, [flight1, flight2])
 
-        chunk = serializer.to_bytes([flight1, flight2], ik)
-        reader = io.BytesIO(chunk)
-        _ik, serial = serializer.from_chunk(reader)
+        _chunk = serializer.to_bytes(chunk)
+        reader = io.BytesIO(_chunk)
+        chunk = serializer.from_chunk(reader)
 
-        _flight1 = serial[0]
-        _flight2 = serial[1]
+        _flight1 = chunk.values[0]
+        _flight2 = chunk.values[1]
 
-        assert ik.hex == _ik.hex
+        assert ik.hex == chunk.id.hex
 
         assert flight1.id == _flight1.id
         assert flight1.origin == _flight1.origin

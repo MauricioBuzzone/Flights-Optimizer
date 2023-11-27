@@ -12,13 +12,17 @@ def next():
 class TlvTypes():
     # sizes
     SIZE_CODE_MSG = 4
+    SIZE_UUID = 16
+    SIZE_BOOL = 1
+    SIZE_CLIENT_ID = 16
+    CHUNK_WORKERS_ID_LENGTH = 1 # ADD UP TO 256 UNIQUE WORKERS PER CLUSTER
 
     # types
     EOF = next()
-    UUID = next()
     WAIT = next()
     POLL = next()
-    
+    ACK = next()
+
     AIRPORT_CHUNK = next()
     AIRPORT = next()
     AIRPORT_COD = next()
@@ -61,8 +65,6 @@ class TlvTypes():
     LINE_CHUNK = next()
     LINE = next()
     LINE_RAW = next()
-
-    ACK = next()
 
 def is_eof(bytes):
     if len(bytes) == TlvTypes.SIZE_CODE_MSG:
@@ -125,15 +127,33 @@ def float_to_bytes(f:float, code: int):
 def float_from_bytes(bytes_f):
     return struct.unpack('!f', bytes_f)[0]
 
-def idempotency_key_to_bytes(ik, code: int):
-    bytes = code_to_bytes(code)
-    bytes_ik = ik.bytes
-    bytes += int.to_bytes(len(bytes_ik), SIZE_LENGTH, 'big')
-    bytes += bytes_ik
-    return bytes
+def bool_to_bytes(b: bool):
+    return bool.to_bytes(b, TlvTypes.SIZE_BOOL, 'big')
+
+def bool_from_bytes(bytes_b):
+    return bool.from_bytes(bytes_b, 'big')
+
+def idempotency_key_to_bytes(ik):
+    return ik.bytes
 
 def idempotency_key_from_bytes(bytes_ik):
     return uuid.UUID(bytes=bytes_ik)
+
+# Workers should be a list of integers (from 0 to 255)
+def workers_to_bytes(workers: list):
+    bytes_w = b''.join([int.to_bytes(i, TlvTypes.CHUNK_WORKERS_ID_LENGTH, 'big') for i in workers])
+    raw = int.to_bytes(len(bytes_w), SIZE_LENGTH, 'big')
+    raw += bytes_w
+    return raw
+
+def workers_from_bytes(bytes_w):
+    if len(bytes_w) == 0:
+        return []
+    workers = []
+    for i in range(0, len(bytes_w), TlvTypes.CHUNK_WORKERS_ID_LENGTH):
+        w_i = int.from_bytes(bytes_w[i:i+TlvTypes.CHUNK_WORKERS_ID_LENGTH], 'big')
+        workers.append(w_i)
+    return workers
 
 class UnexpectedType(Exception):
     pass

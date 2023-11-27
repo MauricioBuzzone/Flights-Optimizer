@@ -2,6 +2,7 @@ import logging
 from utils.worker import Worker
 from middleware.middlewareQE import MiddlewareQE
 from utils.serializer.flightQ2Serializer import FlightQ2Serializer
+from utils.chunk import Chunk
 from geopy.distance import geodesic
 
 class Query2Handler(Worker):
@@ -34,6 +35,7 @@ class Query2Handler(Worker):
 
     def do_after_work(self, idempotency_key):
         if self.filtered_flights:
-            data = self.out_serializer.to_bytes(self.filtered_flights, idempotency_key)
+            _chunk = Chunk(id=idempotency_key, values=self.filtered_flights)
+            data = self.out_serializer.to_bytes(_chunk)
             self.middleware.publish(data)
         self.filtered_flights = []

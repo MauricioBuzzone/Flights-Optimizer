@@ -7,6 +7,8 @@ from model.flight import Flight
 from model.duration import Duration
 
 class FlightQ2Serializer(Serializer):
+    def __init__(self):
+        super().__init__(TlvTypes.FLIGHT_CHUNK)
 
     def make_raw_dict(self):
         return {
@@ -30,10 +32,10 @@ class FlightQ2Serializer(Serializer):
             flight_duration=Duration(hours=0, minutes=0),
         )
 
-    def to_bytes(self, chunk: list, idempotency_key):
+    def values_to_bytes(self, flights):
         raw_chunk = b''
 
-        for flight in chunk:
+        for flight in flights:
             raw_flight = b''
             raw_flight += string_to_bytes(flight.id, TlvTypes.FLIGHT_ID)
             raw_flight += string_to_bytes(flight.origin, TlvTypes.FLIGHT_ORIGIN)
@@ -44,11 +46,4 @@ class FlightQ2Serializer(Serializer):
             raw_chunk += int.to_bytes(len(raw_flight), SIZE_LENGTH, 'big') 
             raw_chunk += raw_flight
 
-        result = code_to_bytes(TlvTypes.FLIGHT_CHUNK)
-        result += int.to_bytes(len(chunk), SIZE_LENGTH, 'big') 
-
-        result += idempotency_key_to_bytes(idempotency_key, TlvTypes.UUID)
-
-        result += raw_chunk
-
-        return result
+        return raw_chunk

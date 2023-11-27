@@ -10,6 +10,9 @@ from utils.protocol import code_to_bytes, idempotency_key_to_bytes
 # ID, trayecto, escalas y duración de los 2 vuelos más rápidos para cada
 #  trayecto entre todos los vuelos de 3 escalas o más.
 class ResultQ3Serializer(Serializer):
+    def __init__(self):
+        super().__init__(TlvTypes.RESULT_Q3_CHUNK)
+
     def make_raw_dict(self):
         return {
             TlvTypes.RESULT_Q3: b'', 
@@ -63,10 +66,10 @@ class ResultQ3Serializer(Serializer):
             return ResultQ3(flight1, flight2)
         return ResultQ3(flight1)
 
-    def to_bytes(self, chunk: list, idempotency_key):
+    def values_to_bytes(self, results):
         raw_chunk = b''
 
-        for resultQ3 in chunk:
+        for resultQ3 in results:
             flight1 = resultQ3.fastest_flight
             flight2 = resultQ3.second_fastest_flight
 
@@ -93,11 +96,4 @@ class ResultQ3Serializer(Serializer):
             raw_chunk += int.to_bytes(len(raw_result), SIZE_LENGTH, 'big')
             raw_chunk += raw_result
 
-        result = code_to_bytes(TlvTypes.RESULT_Q3_CHUNK)
-        result += int.to_bytes(len(chunk), SIZE_LENGTH, 'big')
-
-        result += idempotency_key_to_bytes(idempotency_key, TlvTypes.UUID)
-
-        result += raw_chunk
-
-        return result
+        return raw_chunk

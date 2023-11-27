@@ -4,6 +4,9 @@ from utils.protocol import string_to_bytes, string_from_bytes
 from utils.protocol import code_to_bytes, idempotency_key_to_bytes
 
 class LineSerializer(Serializer):
+    def __init__(self):
+        super().__init__(TlvTypes.LINE_CHUNK)
+
     def make_raw_dict(self):
         return {
             TlvTypes.LINE_RAW: b'',
@@ -12,10 +15,10 @@ class LineSerializer(Serializer):
     def from_raw_dict(self, raw_dict):
         return string_from_bytes(raw_dict[TlvTypes.LINE_RAW])
 
-    def to_bytes(self, chunk: list, idempotency_key):
+    def values_to_bytes(self, lines):
         raw_chunk = b''
 
-        for line in chunk:
+        for line in lines:
             raw_result = b''
             raw_result += string_to_bytes(line, TlvTypes.LINE_RAW)
 
@@ -23,11 +26,4 @@ class LineSerializer(Serializer):
             raw_chunk += int.to_bytes(len(raw_result), SIZE_LENGTH, 'big')
             raw_chunk += raw_result
 
-        result = code_to_bytes(TlvTypes.LINE_CHUNK)
-        result += int.to_bytes(len(chunk), SIZE_LENGTH, 'big')
-
-        result += idempotency_key_to_bytes(idempotency_key, TlvTypes.UUID)
-
-        result += raw_chunk
-
-        return result
+        return raw_chunk

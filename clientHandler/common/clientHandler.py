@@ -10,6 +10,7 @@ from utils.serializer.flightQ1Serializer import FlightQ1Serializer
 from utils.serializer.flightQ2Serializer import FlightQ2Serializer
 from utils.serializer.flightQ4Serializer import FlightQ4Serializer
 from utils.protocolHandler import ProtocolHandler
+from utils.chunk import Chunk
 
 from common.clientHandlerMiddleware import ClientHandlerMiddleware
 
@@ -59,12 +60,12 @@ class ClientHandler:
             protocolHandler = ProtocolHandler(client_sock)
             keep_reading = True
             while keep_reading:
-                t, ik_value = protocolHandler.read()
+                t, chunk = protocolHandler.read()
 
                 if protocolHandler.is_flights(t):
-                    keep_reading = self.__handle_flights(ik_value[0], ik_value[1])
+                    keep_reading = self.__handle_flights(chunk)
                 elif protocolHandler.is_airports(t):
-                    keep_reading = self.__handle_airports(ik_value[0], ik_value[1])
+                    keep_reading = self.__handle_airports(chunk)
                 elif protocolHandler.is_airport_eof(t):
                     keep_reading = self.__handle_airport_eof()
                 elif protocolHandler.is_flight_eof(t):
@@ -89,13 +90,14 @@ class ClientHandler:
         logging.debug(f'action: send_airports | value: EOF | result: success')
         return True
 
-    def __handle_airports(self, idempotency_key, airports):
-        logging.debug(f'action: recived airports[id={idempotency_key}] | result: success | N: {len(airports)}')
+    def __handle_airports(self, chunk):
+        logging.debug(f'action: recived airports[id={chunk.id}] | result: success | N: {len(chunk.values)}')
 
-        data = self.airport_serializer.to_bytes(airports, idempotency_key)
+        data = self.airport_serializer.to_bytes(chunk)
+
         self.middleware.send_airport(data)
 
-        logging.debug(f'action: send_airports | result: success | N: {len(airports)}')
+        logging.debug(f'action: send_airports | result: success | N: {len(chunk.values)}')
         return True
 
     def __handle_flight_eof(self):
@@ -104,21 +106,21 @@ class ClientHandler:
         self.middleware.send_eof(eof)
         return False
         
-    def __handle_flights(self, idempotency_key, flights):
+    def __handle_flights(self, chunk):
         #  It's responsible for separating the relevant 
         #  fields for each query and sending them to different queues.
-        logging.debug(f'action: recived flights[id={idempotency_key}] | result: success | N: {len(flights)}')
+        logging.debug(f'action: recived flights[id={chunk.id}] | result: success | N: {len(chunk.values)}')
 
         # Q1:
-        data = self.flight_q1_serializer.to_bytes(flights, idempotency_key)
+        data = self.flight_q1_serializer.to_bytes(chunk)
         self.middleware.send_flightsQ1(data)
 
         # Q2:
-        data = self.flight_q2_serializer.to_bytes(flights, idempotency_key)
+        data = self.flight_q2_serializer.to_bytes(chunk)
         self.middleware.send_flightsQ2(data)
 
         # Q4:
-        data = self.flight_q4_serializer.to_bytes(flights, idempotency_key)
+        data = self.flight_q4_serializer.to_bytes(chunk)
         self.middleware.send_flightsQ4(data)
 
         return True

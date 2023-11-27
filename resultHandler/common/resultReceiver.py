@@ -70,9 +70,9 @@ class ResultReceiver():
             return []
 
         reader = io.BytesIO(bytes_raw)
-        idempotency_key, results = self.serializers[type].from_chunk(reader)
+        chunk = self.serializers[type].from_chunk(reader)
 
-        return results
+        return chunk.values
 
     def __handle_signal(self, signum, frame):
         logging.debug(f'action: stop_handler | result: in_progress | signal {signum}')
